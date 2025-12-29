@@ -24,7 +24,12 @@ const limiter = rateLimit({
 // Security middleware
 app.use(helmet()); // Security headers
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(morgan('dev'));
+
+// Enable HTTP request logging only in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined')); // Production: detailed logs
+}
+
 app.use(limiter); // Apply rate limiting
 app.use(express.json({ limit: '10mb' })); // Limit JSON body size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

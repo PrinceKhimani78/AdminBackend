@@ -14,14 +14,14 @@ router.post('/', transformFrontendFields, validateCandidateProfile, checkValidat
 router.put('/:id', validateUUID, transformFrontendFields, validateCandidateProfile, checkValidation, candidateController.updateProfile);
 router.delete('/:id', validateUUID, checkValidation, candidateController.deleteProfile);
 
-// Document endpoints with virus scanning
+// Document endpoints with file validation
 router.get('/:id/documents', validateUUID, checkValidation, candidateController.getCandidateDocuments);
 router.post('/:id/upload', 
   validateUUID, 
   checkValidation,
-  uploadCandidateFiles, 
+  uploadCandidateFiles,
   validateFileType,
-  validateFileSize(5), // Max 5MB
+  validateFileSize(5), // Max 5MB for photos
   scanUploadedFile,
   candidateController.uploadDocument
 );
