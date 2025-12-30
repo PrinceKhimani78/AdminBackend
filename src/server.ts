@@ -42,10 +42,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// API Routes
 app.use('/api', router);
 
-// Error handlers (must be last)
 app.use(notFoundHandler);
 app.use(errorHandler);
 
