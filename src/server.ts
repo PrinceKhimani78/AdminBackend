@@ -23,7 +23,7 @@ const limiter = rateLimit({
 
 // Security middleware
 app.use(helmet()); // Security headers
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || '*' }));
 
 // Enable HTTP request logging only in production
 if (process.env.NODE_ENV === 'production') {
