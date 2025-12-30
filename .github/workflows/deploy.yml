@@ -34,6 +34,7 @@ jobs:
           export NVM_DIR=~/.nvm
           source ~/.nvm/nvm.sh
           cd /home/api.rojgariindia.com/public_html
+          git reset --hard
           git pull origin main
           npm install
           npm run build
