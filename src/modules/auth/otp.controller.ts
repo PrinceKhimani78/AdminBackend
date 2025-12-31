@@ -8,14 +8,15 @@ import * as otpService from './otp.service';
 export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.body;
-    
+
     await otpService.sendOtpEmail(email);
-    
+
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('SMTP Error:', error); // Log the full error
     if (error instanceof Error && error.message.includes('Invalid login')) {
       res.status(500).json({
         success: false,
@@ -25,7 +26,7 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
     }
     res.status(500).json({
       success: false,
-      error: 'Failed to send email',
+      error: 'Failed to send email: ' + (error.message || 'Unknown error'),
     });
   }
 };
@@ -37,7 +38,7 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
 export const verifyOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, otp } = req.body;
-    
+
     if (!email || !otp) {
       res.status(400).json({
         success: false,
@@ -45,9 +46,9 @@ export const verifyOtp = async (req: Request, res: Response, next: NextFunction)
       });
       return;
     }
-    
+
     const result = otpService.verifyOtp(email, otp);
-    
+
     if (!result.success) {
       res.status(400).json({
         success: false,
@@ -55,7 +56,7 @@ export const verifyOtp = async (req: Request, res: Response, next: NextFunction)
       });
       return;
     }
-    
+
     res.status(200).json({
       success: true,
       message: result.message,
