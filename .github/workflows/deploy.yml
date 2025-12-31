@@ -38,4 +38,4 @@ jobs:
           git pull origin main
           npm install
           npm run build
-          pm2 restart admin-backend
+          pm2 restart rojgari-backend
