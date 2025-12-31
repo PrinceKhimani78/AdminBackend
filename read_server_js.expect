@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+# Read first 50 lines of dist/server.js
+set cmd "head -n 50 /home/api.rojgariindia.com/public_html/dist/server.js"
+spawn ssh root@185.149.234.57 "$cmd"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "Hitesh@123\r" }
+}
+expect eof
