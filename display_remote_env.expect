@@ -1,0 +1,9 @@
+#!/usr/bin/expect -f
+set timeout 30
+set cmd "cat /home/api.rojgariindia.com/public_html/.env"
+spawn ssh root@185.149.234.57 "$cmd"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "Hitesh@123\r" }
+}
+expect eof

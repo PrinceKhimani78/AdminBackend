@@ -12,6 +12,9 @@ import router from './routes';
 dotenv.config();
 
 const app: Application = express();
+// Trust Proxy is required when running behind Nginx. 
+// Without this, express-rate-limit will crash because it cannot trust the X-Forwarded-For header.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Rate limiting to prevent brute force attacks
