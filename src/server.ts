@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import router from './routes';
+import { sequelize } from './config/database';
 
 dotenv.config();
 
@@ -46,7 +47,6 @@ app.get('/health', (req, res) => {
 });
 
 // EMERGENCY DATABASE FIX ROUTE
-import { sequelize } from './config/database';
 app.get('/fix-db-schema', async (req, res) => {
   try {
     const queries = [
