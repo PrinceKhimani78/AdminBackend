@@ -6,7 +6,10 @@ export interface WorkExperience {
   start_date: Date | null;
   end_date: Date | null;
   salary_period: string;
+  current_wages?: number;
   is_current: boolean;
+  current_city?: string;
+  current_village?: string;
   created_at?: Date;
 }
 
@@ -16,7 +19,10 @@ export interface CreateWorkExperienceDTO {
   start_date?: string;
   end_date?: string;
   salary_period?: string;
+  current_wages?: number;
   is_current?: boolean;
+  current_city?: string;
+  current_village?: string;
 }
 
 export interface CandidateSkill {

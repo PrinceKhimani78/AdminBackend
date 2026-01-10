@@ -2,7 +2,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
 import { WorkExperience } from '../modules/candidate/workExperience.types';
 
-interface WorkExperienceCreationAttributes extends Optional<WorkExperience, 'id' | 'created_at'> {}
+interface WorkExperienceCreationAttributes extends Optional<WorkExperience, 'id' | 'created_at'> { }
 
 class WorkExperienceModel extends Model<WorkExperience, WorkExperienceCreationAttributes> implements WorkExperience {
   public id!: string;
@@ -12,6 +12,9 @@ class WorkExperienceModel extends Model<WorkExperience, WorkExperienceCreationAt
   public start_date!: Date | null;
   public end_date!: Date | null;
   public salary_period!: string;
+  public current_wages?: number;
+  public current_city?: string;
+  public current_village?: string;
   public is_current!: boolean;
   public readonly created_at?: Date;
 }
@@ -44,6 +47,18 @@ WorkExperienceModel.init(
       allowNull: true,
     },
     salary_period: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    current_wages: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
+    current_city: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    current_village: {
       type: DataTypes.STRING(100),
       allowNull: true,
     },

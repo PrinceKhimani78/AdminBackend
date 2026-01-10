@@ -13,13 +13,13 @@ import { CANDIDATE_PROFILE_MESSAGES, CANDIDATE_STATUS, SORT_ORDER } from '../../
 export const getAllCandidates = async (page: number = 1, limit: number = 10) => {
   return handleServiceCall(async () => {
     const offset = (page - 1) * limit;
-    
+
     const { count, rows } = await CandidateModel.findAndCountAll({
       limit,
       offset,
       order: [['created_at', SORT_ORDER.DESC]],
     });
-    
+
     return {
       profiles: rows,
       pagination: {
@@ -38,26 +38,26 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10) => 
 export const getCandidateById = async (id: string): Promise<CandidateWithRelations | null> => {
   return handleServiceCall(async () => {
     const candidate = await CandidateModel.findByPk(id);
-    
+
     if (!candidate) {
       return null;
     }
-    
+
     // Get work experience
     const workExperience = await WorkExperienceModel.findAll({
       where: { candidate_id: id },
       order: [['start_date', SORT_ORDER.DESC]],
     });
-    
+
     // Get skills
     const skills = await CandidateSkillModel.findAll({
       where: { candidate_id: id },
     });
-    
+
     const candidateData = candidate.toJSON() as CandidateWithRelations;
     candidateData.work_experience = workExperience.map(exp => exp.toJSON());
     candidateData.skills = skills.map(skill => skill.toJSON());
-    
+
     return candidateData;
   });
 };
@@ -70,31 +70,38 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
   const existing = await CandidateModel.findOne({
     where: { email: data.email },
   });
-  
+
   if (existing) {
     throw new Error(CANDIDATE_PROFILE_MESSAGES.ERROR.EMAIL_ALREADY_EXISTS);
   }
-  
+
   const transaction = await sequelize.transaction();
-  
+
   try {
-    
+
     // Prepare candidate data
     const candidateData: any = {
       full_name: data.full_name,
       surname: data.surname,
       email: data.email,
       mobile_number: data.mobile_number,
+      alternate_mobile_number: data.alternate_mobile_number,
+      marital_status: data.marital_status,
       gender: data.gender ? (data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase()) as 'Male' | 'Female' | 'Other' : 'Male',
       date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : null,
       address: data.address,
       country: data.country,
       state: data.state,
+      district: data.district,
       city: data.city,
+      village: data.village,
       position: data.position,
       experienced: data.experienced || false,
       fresher: data.fresher || false,
       expected_salary: data.expected_salary,
+      expected_salary_min: data.expected_salary_min,
+      expected_salary_max: data.expected_salary_max,
+      total_experience_years: data.total_experience_years,
       job_category: data.job_category,
       current_location: data.current_location,
       interview_availability: data.interview_availability,
@@ -104,25 +111,25 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       ip_address: ip_address,
       status: CANDIDATE_STATUS.ACTIVE,
     };
-    
+
     // Create candidate
     const candidate = await CandidateModel.create(candidateData, { transaction });
     const candidateId = candidate.id;
-    
+
     // Insert work experience if provided
     if (data.work_experience && Array.isArray(data.work_experience)) {
       for (const exp of data.work_experience) {
         await insertWorkExperience(candidateId, exp, transaction);
       }
     }
-    
+
     // Insert skills if provided
     if (data.skills && Array.isArray(data.skills)) {
       for (const skill of data.skills) {
         await insertSkill(candidateId, skill, transaction);
       }
     }
-    
+
     await transaction.commit();
     return candidateId;
   } catch (error) {
@@ -136,32 +143,39 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
  */
 export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Promise<boolean> => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const candidate = await CandidateModel.findByPk(id, { transaction });
-    
+
     if (!candidate) {
       await transaction.rollback();
       return false;
     }
-    
+
     // Prepare update data
     const updateData: any = {};
-    
+
     if (data.full_name !== undefined) updateData.full_name = data.full_name;
     if (data.surname !== undefined) updateData.surname = data.surname;
     if (data.email !== undefined) updateData.email = data.email;
     if (data.mobile_number !== undefined) updateData.mobile_number = data.mobile_number;
+    if (data.alternate_mobile_number !== undefined) updateData.alternate_mobile_number = data.alternate_mobile_number;
+    if (data.marital_status !== undefined) updateData.marital_status = data.marital_status;
     if (data.gender !== undefined) updateData.gender = data.gender;
     if (data.date_of_birth !== undefined) updateData.date_of_birth = data.date_of_birth ? new Date(data.date_of_birth) : null;
     if (data.address !== undefined) updateData.address = data.address;
     if (data.country !== undefined) updateData.country = data.country;
     if (data.state !== undefined) updateData.state = data.state;
+    if (data.district !== undefined) updateData.district = data.district;
     if (data.city !== undefined) updateData.city = data.city;
+    if (data.village !== undefined) updateData.village = data.village;
     if (data.position !== undefined) updateData.position = data.position;
     if (data.experienced !== undefined) updateData.experienced = data.experienced;
     if (data.fresher !== undefined) updateData.fresher = data.fresher;
     if (data.expected_salary !== undefined) updateData.expected_salary = data.expected_salary;
+    if (data.expected_salary_min !== undefined) updateData.expected_salary_min = data.expected_salary_min;
+    if (data.expected_salary_max !== undefined) updateData.expected_salary_max = data.expected_salary_max;
+    if (data.total_experience_years !== undefined) updateData.total_experience_years = data.total_experience_years;
     if (data.job_category !== undefined) updateData.job_category = data.job_category;
     if (data.current_location !== undefined) updateData.current_location = data.current_location;
     if (data.interview_availability !== undefined) updateData.interview_availability = data.interview_availability;
@@ -169,7 +183,7 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.availability_end !== undefined) updateData.availability_end = data.availability_end ? new Date(data.availability_end) : null;
     if (data.preferred_shift !== undefined) updateData.preferred_shift = data.preferred_shift;
     if (data.status !== undefined) updateData.status = data.status;
-    
+
     await candidate.update(updateData, { transaction });
     await transaction.commit();
     return true;
@@ -184,22 +198,22 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
  */
 export const deleteCandidate = async (id: string): Promise<boolean> => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const candidate = await CandidateModel.findByPk(id, { transaction });
-    
+
     if (!candidate) {
       await transaction.rollback();
       return false;
     }
-    
+
     // Delete related records
     await WorkExperienceModel.destroy({ where: { candidate_id: id }, transaction });
     await CandidateSkillModel.destroy({ where: { candidate_id: id }, transaction });
-    
+
     // Delete candidate
     await candidate.destroy({ transaction });
-    
+
     await transaction.commit();
     return true;
   } catch (error) {
@@ -218,11 +232,11 @@ export const updateCandidateFiles = async (
 ): Promise<boolean> => {
   return handleServiceCall(async () => {
     const candidate = await CandidateModel.findByPk(id);
-    
+
     if (!candidate) {
       return false;
     }
-    
+
     // Get old file paths for deletion
     const oldFiles: string[] = [];
     if (files.profile_photo && candidate.profile_photo) {
@@ -231,13 +245,13 @@ export const updateCandidateFiles = async (
     if (files.resume && candidate.resume) {
       oldFiles.push(candidate.resume);
     }
-    
+
     const updateData: any = {};
     if (files.profile_photo) updateData.profile_photo = files.profile_photo;
     if (files.resume) updateData.resume = files.resume;
-    
+
     await candidate.update(updateData);
-    
+
     // Delete old files asynchronously (non-blocking)
     if (oldFiles.length > 0) {
       const { deleteOldFile } = await import('../../middleware/upload.middleware');
@@ -245,7 +259,7 @@ export const updateCandidateFiles = async (
         console.error('Error deleting old files:', err);
       });
     }
-    
+
     return true;
   });
 };
@@ -255,13 +269,13 @@ export const getCandidateDocuments = async (candidateId: string) => {
     const candidate = await CandidateModel.findByPk(candidateId, {
       attributes: ['id', 'full_name', 'profile_photo', 'resume'],
     });
-    
+
     if (!candidate) {
       return null;
     }
-    
+
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
+
     return {
       profile_photo: {
         path: candidate.profile_photo,
@@ -287,14 +301,17 @@ async function insertWorkExperience(candidateId: string, data: any, transaction:
     start_date: data.start_date ? new Date(data.start_date) : null,
     end_date: data.end_date ? new Date(data.end_date) : null,
     salary_period: data.salary_period || '',
+    current_wages: data.current_wages || null,
+    current_city: data.current_city || '',
+    current_village: data.current_village || '',
     is_current: data.is_current || false,
   };
-  
+
   // If is_current is true, end_date must be null
   if (experienceData.is_current) {
     experienceData.end_date = null;
   }
-  
+
   return await WorkExperienceModel.create(experienceData, { transaction });
 }
 
@@ -304,6 +321,6 @@ async function insertSkill(candidateId: string, data: any, transaction: any) {
     skill_name: typeof data === 'string' ? data : (data.skill_name || ''),
     years_of_experience: typeof data === 'object' ? (data.years_of_experience || '') : '',
   };
-  
+
   return await CandidateSkillModel.create(skillData, { transaction });
 }

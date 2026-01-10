@@ -2,7 +2,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
 import { Candidate } from '../modules/candidate/candidateTypes';
 
-interface CandidateCreationAttributes extends Optional<Candidate, 'id' | 'created_at' | 'updated_at'> {}
+interface CandidateCreationAttributes extends Optional<Candidate, 'id' | 'created_at' | 'updated_at'> { }
 
 class CandidateModel extends Model<Candidate, CandidateCreationAttributes> implements Candidate {
   public id!: string;
@@ -30,6 +30,13 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public resume?: string;
   public ip_address?: string;
   public status!: 'Active' | 'Inactive';
+  public marital_status?: string;
+  public alternate_mobile_number?: string;
+  public district?: string;
+  public village?: string;
+  public expected_salary_min?: number;
+  public expected_salary_max?: number;
+  public total_experience_years?: number;
   public readonly created_at?: Date;
   public readonly updated_at?: Date;
 }
@@ -82,6 +89,14 @@ CandidateModel.init(
       type: DataTypes.STRING(100),
       allowNull: true,
     },
+    district: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    village: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     position: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -98,6 +113,18 @@ CandidateModel.init(
     },
     expected_salary: {
       type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    expected_salary_min: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    expected_salary_max: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    total_experience_years: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     job_category: {
