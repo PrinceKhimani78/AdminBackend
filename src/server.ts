@@ -26,7 +26,9 @@ const limiter = rateLimit({
 });
 
 // Security middleware
-app.use(helmet()); // Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+})); // Security headers
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || '*' }));
 
 // Enable HTTP request logging only in production
