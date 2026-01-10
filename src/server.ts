@@ -45,6 +45,38 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
+// EMERGENCY DATABASE FIX ROUTE
+import { sequelize } from './config/database';
+app.get('/fix-db-schema', async (req, res) => {
+  try {
+    const queries = [
+      "ALTER TABLE candidate_profiles ADD COLUMN marital_status VARCHAR(50) NULL AFTER gender",
+      "ALTER TABLE candidate_profiles ADD COLUMN alternate_mobile_number VARCHAR(20) NULL AFTER mobile_number",
+      "ALTER TABLE candidate_profiles ADD COLUMN district VARCHAR(100) NULL AFTER state",
+      "ALTER TABLE candidate_profiles ADD COLUMN village VARCHAR(100) NULL AFTER city",
+      "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_min INT NULL AFTER expected_salary",
+      "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_max INT NULL AFTER expected_salary_min",
+      "ALTER TABLE candidate_profiles ADD COLUMN total_experience_years INT NULL AFTER start_date",
+      "ALTER TABLE candidate_work_experience ADD COLUMN current_wages DECIMAL(12, 2) NULL AFTER salary_period",
+      "ALTER TABLE candidate_work_experience ADD COLUMN current_city VARCHAR(100) NULL AFTER current_wages",
+      "ALTER TABLE candidate_work_experience ADD COLUMN current_village VARCHAR(100) NULL AFTER current_city"
+    ];
+
+    const results = [];
+    for (const sql of queries) {
+      try {
+        await sequelize.query(sql);
+        results.push({ sql, status: 'Success' });
+      } catch (error: any) {
+        results.push({ sql, status: 'Failed/Skipped', error: error.message });
+      }
+    }
+    res.json({ success: true, results });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use('/api', router);
 
 app.use(notFoundHandler);
