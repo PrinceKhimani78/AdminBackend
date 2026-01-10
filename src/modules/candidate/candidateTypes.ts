@@ -18,9 +18,9 @@ export interface Candidate {
   experienced?: boolean;
   fresher?: boolean;
   expected_salary?: string;
-  expected_salary_min?: string;
-  expected_salary_max?: string;
-  total_experience_years?: string;
+  expected_salary_min?: number;
+  expected_salary_max?: number;
+  total_experience_years?: number;
   job_category?: string;
   current_location?: string;
   interview_availability?: string;
@@ -54,9 +54,9 @@ export interface CreateCandidateDTO {
   experienced?: boolean;
   fresher?: boolean;
   expected_salary?: string;
-  expected_salary_min?: string;
-  expected_salary_max?: string;
-  total_experience_years?: string;
+  expected_salary_min?: number;
+  expected_salary_max?: number;
+  total_experience_years?: number;
   job_category?: string;
   current_location?: string;
   interview_availability?: string;
@@ -86,9 +86,9 @@ export interface UpdateCandidateDTO {
   experienced?: boolean;
   fresher?: boolean;
   expected_salary?: string;
-  expected_salary_min?: string;
-  expected_salary_max?: string;
-  total_experience_years?: string;
+  expected_salary_min?: number;
+  expected_salary_max?: number;
+  total_experience_years?: number;
   job_category?: string;
   current_location?: string;
   interview_availability?: string;
