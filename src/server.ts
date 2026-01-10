@@ -56,7 +56,7 @@ app.get('/fix-db-schema', async (req, res) => {
       "ALTER TABLE candidate_profiles ADD COLUMN village VARCHAR(100) NULL AFTER city",
       "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_min INT NULL AFTER expected_salary",
       "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_max INT NULL AFTER expected_salary_min",
-      "ALTER TABLE candidate_profiles ADD COLUMN total_experience_years INT NULL AFTER start_date",
+      "ALTER TABLE candidate_profiles ADD COLUMN total_experience_years INT NULL AFTER expected_salary_max",
       "ALTER TABLE candidate_work_experience ADD COLUMN current_wages DECIMAL(12, 2) NULL AFTER salary_period",
       "ALTER TABLE candidate_work_experience ADD COLUMN current_city VARCHAR(100) NULL AFTER current_wages",
       "ALTER TABLE candidate_work_experience ADD COLUMN current_village VARCHAR(100) NULL AFTER current_city"
