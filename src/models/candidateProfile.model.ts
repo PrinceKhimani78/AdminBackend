@@ -29,6 +29,8 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public profile_photo?: string;
   public resume?: string;
   public ip_address?: string;
+  public summary?: string;
+  public additional_info?: string;
   public status!: 'Active' | 'Inactive';
   public marital_status?: string;
   public alternate_mobile_number?: string;
@@ -161,6 +163,14 @@ CandidateModel.init(
     },
     ip_address: {
       type: DataTypes.STRING(45),
+      allowNull: true,
+    },
+    summary: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    additional_info: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     status: {

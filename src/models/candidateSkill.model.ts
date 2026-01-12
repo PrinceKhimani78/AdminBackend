@@ -2,13 +2,14 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
 import { CandidateSkill } from '../modules/candidate/workExperience.types';
 
-interface CandidateSkillCreationAttributes extends Optional<CandidateSkill, 'id' | 'created_at'> {}
+interface CandidateSkillCreationAttributes extends Optional<CandidateSkill, 'id' | 'created_at'> { }
 
 class CandidateSkillModel extends Model<CandidateSkill, CandidateSkillCreationAttributes> implements CandidateSkill {
   public id!: string;
   public candidate_id!: string;
   public skill_name!: string;
   public years_of_experience!: string;
+  public level?: string;
   public readonly created_at?: Date;
 }
 
@@ -28,6 +29,10 @@ CandidateSkillModel.init(
       allowNull: false,
     },
     years_of_experience: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    level: {
       type: DataTypes.STRING(50),
       allowNull: true,
     },

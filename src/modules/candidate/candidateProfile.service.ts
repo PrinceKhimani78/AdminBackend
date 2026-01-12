@@ -1,6 +1,7 @@
 import CandidateModel from '../../models/candidateProfile.model';
 import WorkExperienceModel from '../../models/workExperience.model';
 import CandidateSkillModel from '../../models/candidateSkill.model';
+import CandidateEducationModel from '../../models/candidateEducation.model';
 import { Candidate, CreateCandidateDTO, UpdateCandidateDTO, CandidateWithRelations } from './candidateTypes';
 import { CreateWorkExperienceDTO, CreateSkillDTO } from './workExperience.types';
 import { sequelize } from '../../config/database';
@@ -54,9 +55,16 @@ export const getCandidateById = async (id: string): Promise<CandidateWithRelatio
       where: { candidate_id: id },
     });
 
+    // Get education
+    const education = await CandidateEducationModel.findAll({
+      where: { candidate_id: id },
+      order: [['passing_year', 'DESC']],
+    });
+
     const candidateData = candidate.toJSON() as CandidateWithRelations;
     candidateData.work_experience = workExperience.map(exp => exp.toJSON());
     candidateData.skills = skills.map(skill => skill.toJSON());
+    candidateData.education = education.map(edu => edu.toJSON());
 
     return candidateData;
   });
@@ -108,6 +116,8 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       availability_start: data.availability_start ? new Date(data.availability_start) : null,
       availability_end: data.availability_end ? new Date(data.availability_end) : null,
       preferred_shift: data.preferred_shift,
+      summary: data.summary,
+      additional_info: data.additional_info,
       ip_address: ip_address,
       status: CANDIDATE_STATUS.ACTIVE,
     };
@@ -120,6 +130,13 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
     if (data.work_experience && Array.isArray(data.work_experience)) {
       for (const exp of data.work_experience) {
         await insertWorkExperience(candidateId, exp, transaction);
+      }
+    }
+
+    // Insert education if provided
+    if (data.education && Array.isArray(data.education)) {
+      for (const edu of data.education) {
+        await insertEducation(candidateId, edu, transaction);
       }
     }
 
@@ -181,7 +198,10 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.interview_availability !== undefined) updateData.interview_availability = data.interview_availability;
     if (data.availability_start !== undefined) updateData.availability_start = data.availability_start ? new Date(data.availability_start) : null;
     if (data.availability_end !== undefined) updateData.availability_end = data.availability_end ? new Date(data.availability_end) : null;
+    if (data.availability_end !== undefined) updateData.availability_end = data.availability_end ? new Date(data.availability_end) : null;
     if (data.preferred_shift !== undefined) updateData.preferred_shift = data.preferred_shift;
+    if (data.summary !== undefined) updateData.summary = data.summary;
+    if (data.additional_info !== undefined) updateData.additional_info = data.additional_info;
     if (data.status !== undefined) updateData.status = data.status;
 
     await candidate.update(updateData, { transaction });
@@ -210,6 +230,7 @@ export const deleteCandidate = async (id: string): Promise<boolean> => {
     // Delete related records
     await WorkExperienceModel.destroy({ where: { candidate_id: id }, transaction });
     await CandidateSkillModel.destroy({ where: { candidate_id: id }, transaction });
+    await CandidateEducationModel.destroy({ where: { candidate_id: id }, transaction });
 
     // Delete candidate
     await candidate.destroy({ transaction });
@@ -320,7 +341,19 @@ async function insertSkill(candidateId: string, data: any, transaction: any) {
     candidate_id: candidateId,
     skill_name: typeof data === 'string' ? data : (data.skill_name || ''),
     years_of_experience: typeof data === 'object' ? (data.years_of_experience || '') : '',
+    level: typeof data === 'object' ? (data.level || '') : '',
   };
 
   return await CandidateSkillModel.create(skillData, { transaction });
+}
+
+async function insertEducation(candidateId: string, data: any, transaction: any) {
+  const educationData: any = {
+    candidate_id: candidateId,
+    degree: data.degree || '',
+    university: data.university || '',
+    passing_year: data.passing_year || data.passingYear || '',
+  };
+
+  return await CandidateEducationModel.create(educationData, { transaction });
 }

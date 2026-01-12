@@ -30,10 +30,12 @@ export interface CandidateSkill {
   candidate_id: string;
   skill_name: string;
   years_of_experience: string;
+  level?: string;
   created_at?: Date;
 }
 
 export interface CreateSkillDTO {
   skill_name: string;
   years_of_experience?: string;
+  level?: string;
 }

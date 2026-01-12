@@ -30,6 +30,8 @@ export interface Candidate {
   profile_photo?: string;
   resume?: string;
   ip_address?: string;
+  summary?: string;
+  additional_info?: string;
   status: 'Active' | 'Inactive';
   created_at?: Date;
   updated_at?: Date;
@@ -63,7 +65,10 @@ export interface CreateCandidateDTO {
   availability_start?: string;
   availability_end?: string;
   preferred_shift?: string;
+  summary?: string;
+  additional_info?: string;
   work_experience?: any[];
+  education?: any[];
   skills?: any[];
 }
 
@@ -95,10 +100,13 @@ export interface UpdateCandidateDTO {
   availability_start?: string;
   availability_end?: string;
   preferred_shift?: string;
+  summary?: string;
+  additional_info?: string;
   status?: 'Active' | 'Inactive';
 }
 
 export interface CandidateWithRelations extends Candidate {
   work_experience?: any[];
+  education?: any[];
   skills?: any[];
 }
