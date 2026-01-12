@@ -52,16 +52,10 @@ app.get('/health', (req, res) => {
 app.get('/fix-db-schema', async (req, res) => {
   try {
     const queries = [
-      "ALTER TABLE candidate_profiles ADD COLUMN marital_status VARCHAR(50) NULL AFTER gender",
-      "ALTER TABLE candidate_profiles ADD COLUMN alternate_mobile_number VARCHAR(20) NULL AFTER mobile_number",
-      "ALTER TABLE candidate_profiles ADD COLUMN district VARCHAR(100) NULL AFTER state",
-      "ALTER TABLE candidate_profiles ADD COLUMN village VARCHAR(100) NULL AFTER city",
-      "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_min INT NULL AFTER expected_salary",
-      "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_max INT NULL AFTER expected_salary_min",
-      "ALTER TABLE candidate_profiles ADD COLUMN total_experience_years INT NULL AFTER expected_salary_max",
-      "ALTER TABLE candidate_work_experience ADD COLUMN current_wages DECIMAL(12, 2) NULL AFTER salary_period",
-      "ALTER TABLE candidate_work_experience ADD COLUMN current_city VARCHAR(100) NULL AFTER current_wages",
-      "ALTER TABLE candidate_work_experience ADD COLUMN current_village VARCHAR(100) NULL AFTER current_city"
+      "ALTER TABLE candidate_profiles ADD COLUMN summary TEXT NULL",
+      "ALTER TABLE candidate_profiles ADD COLUMN additional_info TEXT NULL",
+      "ALTER TABLE candidate_skills ADD COLUMN level VARCHAR(50) NULL",
+      "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) NOT NULL PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
     ];
 
     const results = [];
