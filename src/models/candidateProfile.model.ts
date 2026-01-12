@@ -71,6 +71,14 @@ CandidateModel.init(
       type: DataTypes.ENUM('Male', 'Female', 'Other'),
       allowNull: false,
     },
+    marital_status: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    alternate_mobile_number: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
     date_of_birth: {
       type: DataTypes.DATE,
       allowNull: true,
