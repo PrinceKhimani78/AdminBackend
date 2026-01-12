@@ -18,7 +18,7 @@ export const getAllProfiles = async (req: Request, res: Response, next: NextFunc
   try {
     const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
     const limit = parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT;
-    
+
     const result = await candidateService.getAllCandidates(page, limit);
     sendSuccess(res, result, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILES_RETRIEVED);
   } catch (error) {
@@ -34,12 +34,12 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
   try {
     const { id } = req.params;
     const profile = await candidateService.getCandidateById(id);
-    
+
     if (!profile) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.PROFILE_NOT_FOUND);
       return;
     }
-    
+
     sendSuccess(res, profile, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILE_RETRIEVED);
   } catch (error) {
     next(error);
@@ -54,7 +54,7 @@ export const createProfile = async (req: Request, res: Response, next: NextFunct
   try {
     const ip_address = req.ip || req.socket.remoteAddress;
     const candidateId = await candidateService.createCandidate(req.body, ip_address);
-    
+
     const profile = await candidateService.getCandidateById(candidateId);
     sendCreated(res, profile, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILE_CREATED);
   } catch (error) {
@@ -77,12 +77,12 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
     const updated = await candidateService.updateCandidate(id, req.body);
-    
+
     if (!updated) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.PROFILE_NOT_FOUND);
       return;
     }
-    
+
     const profile = await candidateService.getCandidateById(id);
     sendSuccess(res, profile, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILE_UPDATED);
   } catch (error) {
@@ -98,12 +98,12 @@ export const deleteProfile = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
     const deleted = await candidateService.deleteCandidate(id);
-    
+
     if (!deleted) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.PROFILE_NOT_FOUND);
       return;
     }
-    
+
     sendSuccess(res, null, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILE_DELETED);
   } catch (error) {
     next(error);
@@ -118,12 +118,12 @@ export const getCandidateDocuments = async (req: Request, res: Response, next: N
   try {
     const { id } = req.params;
     const documents = await candidateService.getCandidateDocuments(id);
-    
+
     if (!documents) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
       return;
     }
-    
+
     sendSuccess(res, documents, CANDIDATE_PROFILE_MESSAGES.SUCCESS.DOCUMENTS_RETRIEVED);
   } catch (error) {
     next(error);
@@ -137,53 +137,67 @@ export const getCandidateDocuments = async (req: Request, res: Response, next: N
 export const downloadProfilePhoto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
+    const { size } = req.query;
     const fs = await import('fs');
     const path = await import('path');
-    
+    const sharp = (await import('sharp')).default; // Dynamic import for sharp
+
     const candidate = await candidateService.getCandidateById(id);
-    
+
     if (!candidate || !candidate.profile_photo) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.PHOTO_NOT_FOUND);
       return;
     }
-    
+
     const filePath = path.join(__dirname, '../../../uploads', candidate.profile_photo);
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.PHOTO_FILE_NOT_FOUND);
       return;
     }
-    
-    // Get file stats
-    const stats = fs.statSync(filePath);
-    const fileSize = stats.size;
+
     const fileName = path.basename(filePath);
-    
-    // Set headers for streaming
+
+    // Set common headers
     res.setHeader('Content-Type', CONTENT_TYPES.IMAGE_JPEG);
-    res.setHeader('Content-Length', fileSize);
     res.setHeader('Content-Disposition', `${FILE_PROCESSING.CONTENT_DISPOSITION.INLINE}; filename="${fileName}"`);
     res.setHeader('Cache-Control', FILE_PROCESSING.CACHE.PUBLIC_CACHE);
-    
+
+    // If thumbnail requested
+    if (size === 'thumbnail') {
+      // Resize on the fly
+      const resizeStream = sharp(filePath)
+        .resize(50, 50, { fit: 'cover' })
+        .jpeg({ quality: 60 });
+
+      resizeStream.pipe(res);
+      return;
+    }
+
+    // Get file stats for full size
+    const stats = fs.statSync(filePath);
+    const fileSize = stats.size;
+    res.setHeader('Content-Length', fileSize);
+
     // Create read stream and pipe to response (non-blocking)
     const readStream = fs.createReadStream(filePath, {
       highWaterMark: FILE_PROCESSING.STREAM.CHUNK_SIZE,
     });
-    
+
     readStream.on('error', (error) => {
       console.error('Stream error:', error);
       if (!res.headersSent) {
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
-          success: false, 
-          message: CANDIDATE_PROFILE_MESSAGES.ERROR.FILE_STREAM_ERROR 
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: CANDIDATE_PROFILE_MESSAGES.ERROR.FILE_STREAM_ERROR
         });
       }
     });
-    
+
     // Pipe file to response (streaming, non-blocking)
     readStream.pipe(res);
-    
+
   } catch (error) {
     next(error);
   }
@@ -198,28 +212,28 @@ export const downloadResume = async (req: Request, res: Response, next: NextFunc
     const { id } = req.params;
     const fs = await import('fs');
     const path = await import('path');
-    
+
     const candidate = await candidateService.getCandidateById(id);
-    
+
     if (!candidate || !candidate.resume) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.RESUME_NOT_FOUND);
       return;
     }
-    
+
     const filePath = path.join(__dirname, '../../../uploads', candidate.resume);
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.RESUME_FILE_NOT_FOUND);
       return;
     }
-    
+
     // Get file stats
     const stats = fs.statSync(filePath);
     const fileSize = stats.size;
     const fileName = path.basename(filePath);
     const ext = path.extname(filePath).toLowerCase();
-    
+
     // Set appropriate content type
     let contentType = CONTENT_TYPES.OCTET_STREAM;
     if (ext === FILE_EXTENSIONS.PDF) {
@@ -229,31 +243,31 @@ export const downloadResume = async (req: Request, res: Response, next: NextFunc
     } else if (ext === FILE_EXTENSIONS.DOCX) {
       contentType = CONTENT_TYPES.APPLICATION_DOCX;
     }
-    
+
     // Set headers for streaming download
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', fileSize);
     res.setHeader('Content-Disposition', `${FILE_PROCESSING.CONTENT_DISPOSITION.ATTACHMENT}; filename="${fileName}"`);
     res.setHeader('Cache-Control', FILE_PROCESSING.CACHE.NO_CACHE);
-    
+
     // Create read stream and pipe to response (non-blocking)
     const readStream = fs.createReadStream(filePath, {
       highWaterMark: FILE_PROCESSING.STREAM.CHUNK_SIZE,
     });
-    
+
     readStream.on('error', (error) => {
       console.error('Stream error:', error);
       if (!res.headersSent) {
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
-          success: false, 
-          message: CANDIDATE_PROFILE_MESSAGES.ERROR.FILE_STREAM_ERROR 
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: CANDIDATE_PROFILE_MESSAGES.ERROR.FILE_STREAM_ERROR
         });
       }
     });
-    
+
     // Pipe file to response (streaming, non-blocking)
     readStream.pipe(res);
-    
+
   } catch (error) {
     next(error);
   }
@@ -269,7 +283,7 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
   try {
     const { id } = req.params;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    
+
     if (!files || Object.keys(files).length === 0) {
       res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -277,16 +291,16 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
       });
       return;
     }
-    
+
     const uploadedFiles: any = {};
     const processingPromises: Promise<void>[] = [];
-    
+
     // Process profile photo (async with worker thread)
     if (files.profile_photo && files.profile_photo[0]) {
       const file = files.profile_photo[0];
       const relativePath = file.path.replace(/.*\/uploads\//, '');
       uploadedFiles.profile_photo = relativePath;
-      
+
       // Process image in background worker thread (non-blocking)
       const imageProcessingPromise = (async () => {
         try {
@@ -303,16 +317,16 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
           console.error(CANDIDATE_PROFILE_MESSAGES.PROCESSING.IMAGE_ERROR, error);
         }
       })();
-      
+
       processingPromises.push(imageProcessingPromise);
     }
-    
+
     // Process resume (async with worker thread for consistency)
     if (files.resume && files.resume[0]) {
       const file = files.resume[0];
       const relativePath = file.path.replace(/.*\/uploads\//, '');
       uploadedFiles.resume = relativePath;
-      
+
       // Process resume in background worker thread (non-blocking)
       const resumeProcessingPromise = (async () => {
         try {
@@ -330,34 +344,34 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
           console.error(CANDIDATE_PROFILE_MESSAGES.PROCESSING.RESUME_ERROR, error);
         }
       })();
-      
+
       processingPromises.push(resumeProcessingPromise);
     }
-    
+
     // Update candidate with file paths immediately (don't wait for processing)
     const updated = await candidateService.updateCandidateFiles(id, uploadedFiles);
-    
+
     if (!updated) {
       sendNotFound(res, CANDIDATE_PROFILE_MESSAGES.ERROR.CANDIDATE_NOT_FOUND);
       return;
     }
-    
+
     // Build success message
     const uploadedTypes = Object.keys(uploadedFiles);
     const message = uploadedTypes.length === 2
       ? CANDIDATE_PROFILE_MESSAGES.SUCCESS.BOTH_UPLOADED
       : uploadedTypes.includes('profile_photo')
-      ? CANDIDATE_PROFILE_MESSAGES.SUCCESS.PHOTO_UPLOADED
-      : CANDIDATE_PROFILE_MESSAGES.SUCCESS.RESUME_UPLOADED;
-    
+        ? CANDIDATE_PROFILE_MESSAGES.SUCCESS.PHOTO_UPLOADED
+        : CANDIDATE_PROFILE_MESSAGES.SUCCESS.RESUME_UPLOADED;
+
     // Send response immediately
     sendSuccess(res, uploadedFiles, message);
-    
+
     // Continue processing in background (non-blocking)
     Promise.all(processingPromises).catch(error => {
       console.error(CANDIDATE_PROFILE_MESSAGES.PROCESSING.BACKGROUND_ERROR, error);
     });
-    
+
   } catch (error) {
     next(error);
   }
