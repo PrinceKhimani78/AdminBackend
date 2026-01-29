@@ -118,6 +118,7 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       preferred_shift: data.preferred_shift,
       summary: data.summary,
       additional_info: data.additional_info,
+      pincode: data.pincode,
       ip_address: ip_address,
       status: CANDIDATE_STATUS.ACTIVE,
     };
@@ -202,6 +203,7 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.preferred_shift !== undefined) updateData.preferred_shift = data.preferred_shift;
     if (data.summary !== undefined) updateData.summary = data.summary;
     if (data.additional_info !== undefined) updateData.additional_info = data.additional_info;
+    if (data.pincode !== undefined) updateData.pincode = data.pincode;
     if (data.status !== undefined) updateData.status = data.status;
 
     await candidate.update(updateData, { transaction });

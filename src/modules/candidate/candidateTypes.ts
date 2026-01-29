@@ -32,6 +32,7 @@ export interface Candidate {
   ip_address?: string;
   summary?: string;
   additional_info?: string;
+  pincode?: string;
   status: 'Active' | 'Inactive';
   created_at?: Date;
   updated_at?: Date;
@@ -67,6 +68,7 @@ export interface CreateCandidateDTO {
   preferred_shift?: string;
   summary?: string;
   additional_info?: string;
+  pincode?: string;
   work_experience?: any[];
   education?: any[];
   skills?: any[];
@@ -102,6 +104,7 @@ export interface UpdateCandidateDTO {
   preferred_shift?: string;
   summary?: string;
   additional_info?: string;
+  pincode?: string;
   status?: 'Active' | 'Inactive';
 }
 
