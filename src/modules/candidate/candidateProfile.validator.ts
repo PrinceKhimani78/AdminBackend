@@ -186,6 +186,18 @@ export const createCandidateProfileSchema = Joi.object({
       Joi.object({
         skill_name: Joi.string().required(),
         years_of_experience: Joi.string().optional().allow(''),
+        level: Joi.string().optional().allow(''),
+      })
+    )
+    .optional(),
+
+  // Education array
+  education: Joi.array()
+    .items(
+      Joi.object({
+        degree: Joi.string().required(),
+        university: Joi.string().required(),
+        passing_year: Joi.string().required(),
       })
     )
     .optional(),
@@ -323,6 +335,52 @@ export const updateCandidateProfileSchema = Joi.object({
     .items(Joi.string())
     .optional()
     .allow(null),
+
+  certifications: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().optional(),
+        year: Joi.string().optional().allow(''),
+        achievement: Joi.string().optional().allow(''),
+      })
+    )
+    .optional(),
+
+  work_experience: Joi.array()
+    .items(
+      Joi.object({
+        position: Joi.string().optional(),
+        company: Joi.string().optional(),
+        start_date: Joi.date().optional().allow(null, ''),
+        end_date: Joi.date().optional().allow(null, ''),
+        salary_period: Joi.string().optional().allow(''),
+        current_wages: Joi.alternatives().try(Joi.number(), Joi.string()).optional().allow(null, ''),
+        current_city: Joi.string().optional().allow(''),
+        current_village: Joi.string().optional().allow(''),
+        is_current: Joi.boolean().optional(),
+      })
+    )
+    .optional(),
+
+  skills: Joi.array()
+    .items(
+      Joi.object({
+        skill_name: Joi.string().optional(),
+        years_of_experience: Joi.string().optional().allow(''),
+        level: Joi.string().optional().allow(''),
+      })
+    )
+    .optional(),
+
+  education: Joi.array()
+    .items(
+      Joi.object({
+        degree: Joi.string().optional(),
+        university: Joi.string().optional(),
+        passing_year: Joi.string().optional(),
+      })
+    )
+    .optional(),
 
   status: Joi.string()
     .valid('Active', 'Inactive')
