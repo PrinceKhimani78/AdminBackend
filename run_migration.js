@@ -29,7 +29,12 @@ const migrationCommands = [
     "ALTER TABLE candidate_work_experience ADD COLUMN current_village VARCHAR(100) NULL AFTER current_city",
     "ALTER TABLE candidate_profiles ADD COLUMN pincode VARCHAR(10) NULL AFTER additional_info",
     "ALTER TABLE candidate_profiles ADD COLUMN languages_known JSON NULL",
-    "CREATE TABLE IF NOT EXISTS candidate_certifications (id CHAR(36) PRIMARY KEY, candidate_id CHAR(36) NOT NULL, name VARCHAR(255) NOT NULL, year VARCHAR(10) NULL, achievement TEXT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE)"
+    "CREATE TABLE IF NOT EXISTS candidate_certifications (id CHAR(36) PRIMARY KEY, candidate_id CHAR(36) NOT NULL, name VARCHAR(255) NOT NULL, year VARCHAR(10) NULL, achievement TEXT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "ALTER TABLE candidate_certifications ADD CONSTRAINT fk_cert_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE",
+    "ALTER TABLE candidate_certifications ADD CONSTRAINT fk_cert_candidate_alt FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE",
+    "ALTER TABLE candidate_education ADD CONSTRAINT fk_edu_candidate FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE",
+    "ALTER TABLE candidate_education ADD CONSTRAINT fk_edu_candidate_alt FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE"
 ];
 
 async function runMigration() {
