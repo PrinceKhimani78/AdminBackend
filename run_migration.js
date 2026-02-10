@@ -27,7 +27,9 @@ const migrationCommands = [
     "ALTER TABLE candidate_work_experience ADD COLUMN current_wages DECIMAL(12, 2) NULL AFTER salary_period",
     "ALTER TABLE candidate_work_experience ADD COLUMN current_city VARCHAR(100) NULL AFTER current_wages",
     "ALTER TABLE candidate_work_experience ADD COLUMN current_village VARCHAR(100) NULL AFTER current_city",
-    "ALTER TABLE candidate_profiles ADD COLUMN pincode VARCHAR(10) NULL AFTER additional_info"
+    "ALTER TABLE candidate_profiles ADD COLUMN pincode VARCHAR(10) NULL AFTER additional_info",
+    "ALTER TABLE candidate_profiles ADD COLUMN languages_known JSON NULL",
+    "CREATE TABLE IF NOT EXISTS candidate_certifications (id CHAR(36) PRIMARY KEY, candidate_id CHAR(36) NOT NULL, name VARCHAR(255) NOT NULL, year VARCHAR(10) NULL, achievement TEXT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE)"
 ];
 
 async function runMigration() {
