@@ -33,6 +33,7 @@ export interface Candidate {
   summary?: string;
   additional_info?: string;
   pincode?: string;
+  languages_known?: string[];
   status: 'Active' | 'Inactive';
   created_at?: Date;
   updated_at?: Date;
@@ -72,6 +73,8 @@ export interface CreateCandidateDTO {
   work_experience?: any[];
   education?: any[];
   skills?: any[];
+  certifications?: any[];
+  languages_known?: string[];
 }
 
 export interface UpdateCandidateDTO {
@@ -105,6 +108,7 @@ export interface UpdateCandidateDTO {
   summary?: string;
   additional_info?: string;
   pincode?: string;
+  languages_known?: string[];
   status?: 'Active' | 'Inactive';
 }
 
@@ -112,4 +116,5 @@ export interface CandidateWithRelations extends Candidate {
   work_experience?: any[];
   education?: any[];
   skills?: any[];
+  certifications?: any[];
 }

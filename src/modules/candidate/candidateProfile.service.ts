@@ -2,8 +2,9 @@ import CandidateModel from '../../models/candidateProfile.model';
 import WorkExperienceModel from '../../models/workExperience.model';
 import CandidateSkillModel from '../../models/candidateSkill.model';
 import CandidateEducationModel from '../../models/candidateEducation.model';
+import CandidateCertificationModel from '../../models/candidateCertification.model';
 import { Candidate, CreateCandidateDTO, UpdateCandidateDTO, CandidateWithRelations } from './candidateTypes';
-import { CreateWorkExperienceDTO, CreateSkillDTO } from './workExperience.types';
+import { CreateWorkExperienceDTO, CreateSkillDTO, CreateCertificationDTO } from './workExperience.types';
 import { sequelize } from '../../config/database';
 import { handleServiceCall } from '../../utils/serviceHandlerUtil';
 import { CANDIDATE_PROFILE_MESSAGES, CANDIDATE_STATUS, SORT_ORDER } from '../../constants/candidateProfile.constants';
@@ -61,10 +62,16 @@ export const getCandidateById = async (id: string): Promise<CandidateWithRelatio
       order: [['passing_year', 'DESC']],
     });
 
+    // Get certifications
+    const certifications = await CandidateCertificationModel.findAll({
+      where: { candidate_id: id },
+    });
+
     const candidateData = candidate.toJSON() as CandidateWithRelations;
     candidateData.work_experience = workExperience.map(exp => exp.toJSON());
     candidateData.skills = skills.map(skill => skill.toJSON());
     candidateData.education = education.map(edu => edu.toJSON());
+    candidateData.certifications = certifications.map(cert => cert.toJSON());
 
     return candidateData;
   });
@@ -119,6 +126,7 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       summary: data.summary,
       additional_info: data.additional_info,
       pincode: data.pincode,
+      languages_known: data.languages_known,
       ip_address: ip_address,
       status: CANDIDATE_STATUS.ACTIVE,
     };
@@ -145,6 +153,13 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
     if (data.skills && Array.isArray(data.skills)) {
       for (const skill of data.skills) {
         await insertSkill(candidateId, skill, transaction);
+      }
+    }
+
+    // Insert certifications if provided
+    if (data.certifications && Array.isArray(data.certifications)) {
+      for (const cert of data.certifications) {
+        await insertCertification(candidateId, cert, transaction);
       }
     }
 
@@ -204,6 +219,7 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.summary !== undefined) updateData.summary = data.summary;
     if (data.additional_info !== undefined) updateData.additional_info = data.additional_info;
     if (data.pincode !== undefined) updateData.pincode = data.pincode;
+    if (data.languages_known !== undefined) updateData.languages_known = data.languages_known;
     if (data.status !== undefined) updateData.status = data.status;
 
     await candidate.update(updateData, { transaction });
@@ -233,6 +249,7 @@ export const deleteCandidate = async (id: string): Promise<boolean> => {
     await WorkExperienceModel.destroy({ where: { candidate_id: id }, transaction });
     await CandidateSkillModel.destroy({ where: { candidate_id: id }, transaction });
     await CandidateEducationModel.destroy({ where: { candidate_id: id }, transaction });
+    await CandidateCertificationModel.destroy({ where: { candidate_id: id }, transaction });
 
     // Delete candidate
     await candidate.destroy({ transaction });
@@ -358,4 +375,15 @@ async function insertEducation(candidateId: string, data: any, transaction: any)
   };
 
   return await CandidateEducationModel.create(educationData, { transaction });
+}
+
+async function insertCertification(candidateId: string, data: CreateCertificationDTO, transaction: any) {
+  const certificationData: any = {
+    candidate_id: candidateId,
+    name: data.name || '',
+    year: data.year || '',
+    achievement: data.achievement || '',
+  };
+
+  return await CandidateCertificationModel.create(certificationData, { transaction });
 }

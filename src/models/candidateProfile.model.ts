@@ -40,6 +40,7 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public expected_salary_min?: number;
   public expected_salary_max?: number;
   public total_experience_years?: number;
+  public languages_known?: string[];
   public readonly created_at?: Date;
   public readonly updated_at?: Date;
 }
@@ -136,6 +137,10 @@ CandidateModel.init(
     },
     total_experience_years: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    languages_known: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
     job_category: {

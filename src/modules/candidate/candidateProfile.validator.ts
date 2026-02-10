@@ -143,6 +143,26 @@ export const createCandidateProfileSchema = Joi.object({
     .optional()
     .allow(''),
 
+  pincode: Joi.string()
+    .max(10)
+    .optional()
+    .allow(''),
+
+  languages_known: Joi.array()
+    .items(Joi.string())
+    .optional()
+    .allow(null),
+
+  certifications: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+        year: Joi.string().optional().allow(''),
+        achievement: Joi.string().optional().allow(''),
+      })
+    )
+    .optional(),
+
   // Work experience array
   work_experience: Joi.array()
     .items(
@@ -293,6 +313,16 @@ export const updateCandidateProfileSchema = Joi.object({
     .max(100)
     .optional()
     .allow(''),
+
+  pincode: Joi.string()
+    .max(10)
+    .optional()
+    .allow(''),
+
+  languages_known: Joi.array()
+    .items(Joi.string())
+    .optional()
+    .allow(null),
 
   status: Joi.string()
     .valid('Active', 'Inactive')

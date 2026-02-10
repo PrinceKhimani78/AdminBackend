@@ -39,3 +39,18 @@ export interface CreateSkillDTO {
   years_of_experience?: string;
   level?: string;
 }
+
+export interface CandidateCertification {
+  id: string;
+  candidate_id: string;
+  name: string;
+  year?: string;
+  achievement?: string;
+  created_at?: Date;
+}
+
+export interface CreateCertificationDTO {
+  name: string;
+  year?: string;
+  achievement?: string;
+}
