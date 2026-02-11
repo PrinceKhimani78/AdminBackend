@@ -51,7 +51,7 @@ export const createCandidateProfileSchema = Joi.object({
   alternate_mobile_number: Joi.string()
     .pattern(/^[0-9]{10,15}$/)
     .optional()
-    .allow(''),
+    .allow('', null),
 
   date_of_birth: Joi.date()
     .optional()
@@ -234,7 +234,7 @@ export const updateCandidateProfileSchema = Joi.object({
   alternate_mobile_number: Joi.string()
     .pattern(/^[0-9]{10,15}$/)
     .optional()
-    .allow(''),
+    .allow('', null),
 
   date_of_birth: Joi.date()
     .optional()
