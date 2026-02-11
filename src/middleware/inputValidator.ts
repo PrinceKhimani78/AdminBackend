@@ -35,19 +35,21 @@ export const validateUUID = [
 export const checkValidation = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Validation failed', 
-      errors: errors.array() 
+    const errorDetails = errors.array().map(err => `${err.msg} (${(err as any).path || (err as any).param})`).join(', ');
+    console.log('Validation failed:', errorDetails);
+    return res.status(400).json({
+      success: false,
+      message: `Validation failed: ${errors.array()[0].msg}`,
+      errors: errors.array()
     });
   }
-  
+
   // Sanitize all string inputs to prevent SQL injection
   if (req.body) {
     Object.keys(req.body).forEach(key => {
       req.body[key] = sanitizeInput(req.body[key]);
     });
   }
-  
+
   next();
 };
