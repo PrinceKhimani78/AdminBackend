@@ -127,6 +127,10 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       additional_info: data.additional_info,
       pincode: data.pincode,
       languages_known: data.languages_known,
+      pref_state: data.pref_state,
+      pref_district: data.pref_district,
+      pref_city: data.pref_city,
+      pref_village: data.pref_village,
       ip_address: ip_address,
       status: CANDIDATE_STATUS.ACTIVE,
     };
@@ -220,6 +224,10 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.additional_info !== undefined) updateData.additional_info = data.additional_info;
     if (data.pincode !== undefined) updateData.pincode = data.pincode;
     if (data.languages_known !== undefined) updateData.languages_known = data.languages_known;
+    if (data.pref_state !== undefined) updateData.pref_state = data.pref_state;
+    if (data.pref_district !== undefined) updateData.pref_district = data.pref_district;
+    if (data.pref_city !== undefined) updateData.pref_city = data.pref_city;
+    if (data.pref_village !== undefined) updateData.pref_village = data.pref_village;
     if (data.status !== undefined) updateData.status = data.status;
 
     await candidate.update(updateData, { transaction });
