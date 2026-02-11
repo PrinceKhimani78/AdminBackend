@@ -34,6 +34,10 @@ export interface Candidate {
   additional_info?: string;
   pincode?: string;
   languages_known?: string[];
+  pref_state?: string;
+  pref_district?: string;
+  pref_city?: string;
+  pref_village?: string;
   status: 'Active' | 'Inactive';
   created_at?: Date;
   updated_at?: Date;
@@ -75,6 +79,10 @@ export interface CreateCandidateDTO {
   skills?: any[];
   certifications?: any[];
   languages_known?: string[];
+  pref_state?: string;
+  pref_district?: string;
+  pref_city?: string;
+  pref_village?: string;
 }
 
 export interface UpdateCandidateDTO {
@@ -109,6 +117,10 @@ export interface UpdateCandidateDTO {
   additional_info?: string;
   pincode?: string;
   languages_known?: string[];
+  pref_state?: string;
+  pref_district?: string;
+  pref_city?: string;
+  pref_village?: string;
   status?: 'Active' | 'Inactive';
 }
 

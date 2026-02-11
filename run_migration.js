@@ -18,6 +18,13 @@ const migrationCommands = [
     // candidate_profiles updates
     "ALTER TABLE candidate_profiles ADD COLUMN marital_status VARCHAR(50) NULL AFTER gender",
     "ALTER TABLE candidate_profiles ADD COLUMN alternate_mobile_number VARCHAR(20) NULL AFTER mobile_number",
+    "ALTER TABLE candidate_profiles ADD COLUMN summary TEXT NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN additional_info TEXT NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN pref_state VARCHAR(100) NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN pref_district VARCHAR(100) NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN pref_city VARCHAR(100) NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN pref_village VARCHAR(100) NULL",
+    "ALTER TABLE candidate_skills ADD COLUMN level VARCHAR(50) NULL",
     "ALTER TABLE candidate_profiles ADD COLUMN district VARCHAR(100) NULL AFTER state",
     "ALTER TABLE candidate_profiles ADD COLUMN village VARCHAR(100) NULL AFTER city",
     "ALTER TABLE candidate_profiles ADD COLUMN expected_salary_min INT NULL AFTER expected_salary",

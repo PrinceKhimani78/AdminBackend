@@ -41,6 +41,10 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public expected_salary_max?: number;
   public total_experience_years?: number;
   public languages_known?: string[];
+  public pref_state?: string;
+  public pref_district?: string;
+  public pref_city?: string;
+  public pref_village?: string;
   public readonly created_at?: Date;
   public readonly updated_at?: Date;
 }
@@ -189,6 +193,22 @@ CandidateModel.init(
     },
     pincode: {
       type: DataTypes.STRING(10),
+      allowNull: true,
+    },
+    pref_state: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    pref_district: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    pref_city: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    pref_village: {
+      type: DataTypes.STRING(100),
       allowNull: true,
     },
     status: {
