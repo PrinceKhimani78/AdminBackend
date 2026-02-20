@@ -27,3 +27,24 @@ export interface JobSkill {
   skill_name: string;
   status: 'Active' | 'Inactive';
 }
+
+export interface Industry {
+  id: number;
+  name: string;
+  slug: string;
+  created_at: Date;
+}
+
+export interface Category {
+  id: number;
+  industry_id: number;
+  name: string;
+  created_at: Date;
+}
+
+export interface JobRole {
+  id: number;
+  category_id: number;
+  name: string;
+  created_at: Date;
+}
