@@ -186,7 +186,7 @@ export const createCandidateProfileSchema = Joi.object({
       Joi.object({
         skill_name: Joi.string().required(),
         years_of_experience: Joi.string().optional().allow('', null),
-        level: Joi.string().optional().allow(''),
+        level: Joi.string().optional().allow('', null),
       })
     )
     .optional(),
@@ -366,8 +366,8 @@ export const updateCandidateProfileSchema = Joi.object({
     .items(
       Joi.object({
         skill_name: Joi.string().optional(),
-        years_of_experience: Joi.string().optional().allow(''),
-        level: Joi.string().optional().allow(''),
+        years_of_experience: Joi.string().optional().allow('', null),
+        level: Joi.string().optional().allow('', null),
       })
     )
     .optional(),
