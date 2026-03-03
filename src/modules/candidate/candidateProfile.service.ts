@@ -364,10 +364,11 @@ async function insertWorkExperience(candidateId: string, data: any, transaction:
 }
 
 async function insertSkill(candidateId: string, data: any, transaction: any) {
+  const rawYears = typeof data === 'object' ? (data.years_of_experience ?? null) : null;
   const skillData: any = {
     candidate_id: candidateId,
     skill_name: typeof data === 'string' ? data : (data.skill_name || ''),
-    years_of_experience: typeof data === 'object' ? (data.years_of_experience || '') : '',
+    years_of_experience: rawYears !== '' && rawYears !== null ? Number(rawYears) || null : null,
     level: typeof data === 'object' ? (data.level || '') : '',
   };
 
