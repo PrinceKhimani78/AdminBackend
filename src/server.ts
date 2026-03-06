@@ -8,7 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import router from './routes';
-import { sequelize } from './config/database';
+import { sequelize, testConnection } from './config/database';
 
 dotenv.config();
 
@@ -54,6 +54,7 @@ app.get('/fix-db-schema', async (req, res) => {
     const queries = [
       "ALTER TABLE candidate_profiles ADD COLUMN summary TEXT NULL",
       "ALTER TABLE candidate_profiles ADD COLUMN additional_info TEXT NULL",
+      "ALTER TABLE candidate_profiles ADD COLUMN password VARCHAR(255) NULL",
       "ALTER TABLE candidate_skills ADD COLUMN level VARCHAR(50) NULL",
       "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) NOT NULL PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
     ];
@@ -78,9 +79,10 @@ app.use('/api', router);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+  await testConnection();
 });
 
 export default app;

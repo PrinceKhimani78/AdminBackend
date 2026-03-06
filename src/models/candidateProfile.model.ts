@@ -32,6 +32,7 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public summary?: string;
   public additional_info?: string;
   public pincode?: string;
+  public password?: string;
   public status!: 'Active' | 'Inactive';
   public marital_status?: string;
   public alternate_mobile_number?: string;
@@ -72,6 +73,10 @@ CandidateModel.init(
     mobile_number: {
       type: DataTypes.STRING(20),
       allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: true, // Optional for existing/manual entries, but required for signup
     },
     gender: {
       type: DataTypes.ENUM('Male', 'Female', 'Other'),

@@ -7,7 +7,9 @@ import * as otpService from './otp.service';
  */
 export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email } = req.body;
+    const { email: rawEmail } = req.body;
+    const email = rawEmail.toLowerCase();
+    console.log('DEBUG: Send OTP for:', email);
 
     await otpService.sendOtpEmail(email);
 

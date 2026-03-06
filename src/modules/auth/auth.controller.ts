@@ -1,0 +1,89 @@
+import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import * as otpService from './otp.service';
+import CandidateModel from '../../models/candidateProfile.model';
+import { v4 as uuidv4 } from 'uuid';
+
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email: rawEmail, password, fullName, otp } = req.body;
+        const email = rawEmail.toLowerCase();
+        console.log('DEBUG: Register request received:', { email, fullName, otp, hasPassword: !!password });
+
+        // 1. Verify OTP
+        const otpResult = otpService.verifyOtp(email, otp);
+        console.log('DEBUG: OTP verify result:', otpResult);
+        if (!otpResult.success) {
+            res.status(400).json({ success: false, message: otpResult.message });
+            return;
+        }
+
+        // 2. Check if user exists
+        const existingUser = await CandidateModel.findOne({ where: { email } });
+        if (existingUser) {
+            res.status(409).json({ success: false, message: 'User already exists with this email' });
+            return;
+        }
+
+        // 3. Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 4. Create candidate profile
+        const candidate = await CandidateModel.create({
+            id: uuidv4(),
+            email,
+            password: hashedPassword,
+            full_name: fullName,
+            status: 'Active',
+            mobile_number: '', // Placeholder, as per "not mobile number" rule
+            gender: 'Other', // Placeholder
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            data: { id: candidate.id, email: candidate.email, fullName: candidate.full_name }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. Find user
+        const user = await CandidateModel.findOne({ where: { email } });
+        if (!user || !user.password) {
+            res.status(401).json({ success: false, message: 'Invalid email or password' });
+            return;
+        }
+
+        // 2. Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            res.status(401).json({ success: false, message: 'Invalid email or password' });
+            return;
+        }
+
+        // 3. Generate token
+        const token = jwt.sign(
+            { id: user.id, email: user.email },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '24h' }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                token,
+                user: { id: user.id, email: user.email, fullName: user.full_name }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

@@ -350,6 +350,7 @@ async function insertWorkExperience(candidateId: string, data: any, transaction:
     end_date: data.end_date ? new Date(data.end_date) : null,
     salary_period: data.salary_period || '',
     current_wages: data.current_wages || null,
+    current_state: data.current_state || '',
     current_city: data.current_city || '',
     current_village: data.current_village || '',
     is_current: data.is_current || false,

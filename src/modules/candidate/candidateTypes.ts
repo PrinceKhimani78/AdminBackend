@@ -29,6 +29,7 @@ export interface Candidate {
   preferred_shift?: string;
   profile_photo?: string;
   resume?: string;
+  password?: string;
   ip_address?: string;
   summary?: string;
   additional_info?: string;

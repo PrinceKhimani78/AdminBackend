@@ -2,6 +2,7 @@ import { Router } from 'express';
 import candidateProfileRoutes from '../modules/candidate/candidateProfile.routes';
 import lookupRoutes from '../modules/lookup/lookup.routes';
 import otpRoutes from '../modules/auth/otp.routes';
+import authRoutes from '../modules/auth/auth.routes';
 import uploadPhotoRoutes from './upload.routes';
 import { handleMulterError } from '../middleware/multerError.middleware';
 
@@ -9,12 +10,13 @@ const router = Router();
 
 // Auth routes (OTP) - Keep separate as it's authentication
 router.use('/', otpRoutes);
+router.use('/auth', authRoutes);
 
 // Standalone photo upload (frontend compatibility)
 router.use('/', uploadPhotoRoutes);
 
 // Candidate profile routes (includes upload, resume, CRUD operations)
-router.use('/candidate-profile', candidateProfileRoutes); 
+router.use('/candidate-profile', candidateProfileRoutes);
 
 // Alias: /resume -> /candidate-profile for frontend compatibility
 router.use('/resume', candidateProfileRoutes);

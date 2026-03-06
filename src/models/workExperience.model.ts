@@ -13,6 +13,7 @@ class WorkExperienceModel extends Model<WorkExperience, WorkExperienceCreationAt
   public end_date!: Date | null;
   public salary_period!: string;
   public current_wages?: number;
+  public current_state?: string;
   public current_city?: string;
   public current_village?: string;
   public is_current!: boolean;
@@ -52,6 +53,10 @@ WorkExperienceModel.init(
     },
     current_wages: {
       type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
+    current_state: {
+      type: DataTypes.STRING(100),
       allowNull: true,
     },
     current_city: {

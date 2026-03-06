@@ -98,8 +98,7 @@ export const createCandidateProfileSchema = Joi.object({
   fresher: Joi.boolean()
     .optional(),
 
-  expected_salary: Joi.string()
-    .max(100)
+  expected_salary: Joi.alternatives().try(Joi.string().max(100), Joi.number())
     .optional()
     .allow(''),
 
@@ -173,6 +172,7 @@ export const createCandidateProfileSchema = Joi.object({
         end_date: Joi.date().optional().allow(null, ''),
         salary_period: Joi.string().optional().allow(''),
         current_wages: Joi.alternatives().try(Joi.number(), Joi.string()).optional().allow(null, ''),
+        current_state: Joi.string().optional().allow(''),
         current_city: Joi.string().optional().allow(''),
         current_village: Joi.string().optional().allow(''),
         is_current: Joi.boolean().optional(),
@@ -281,8 +281,7 @@ export const updateCandidateProfileSchema = Joi.object({
   fresher: Joi.boolean()
     .optional(),
 
-  expected_salary: Joi.string()
-    .max(100)
+  expected_salary: Joi.alternatives().try(Joi.string().max(100), Joi.number())
     .optional()
     .allow(''),
 
@@ -355,6 +354,7 @@ export const updateCandidateProfileSchema = Joi.object({
         end_date: Joi.date().optional().allow(null, ''),
         salary_period: Joi.string().optional().allow(''),
         current_wages: Joi.alternatives().try(Joi.number(), Joi.string()).optional().allow(null, ''),
+        current_state: Joi.string().optional().allow(''),
         current_city: Joi.string().optional().allow(''),
         current_village: Joi.string().optional().allow(''),
         is_current: Joi.boolean().optional(),

@@ -1,5 +1,7 @@
 import NodeCache from 'node-cache';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 import { OtpData } from './otp.types';
 
 // OTP Cache - 10 minute TTL
@@ -10,6 +12,40 @@ const OTP_CONFIG = {
   EXPIRY_MINUTES: 10,
   MAX_ATTEMPTS: 5,
 };
+
+const PERSISTENT_CACHE_PATH = path.join('/tmp', 'rojgari_otp_cache.json');
+
+// Helper to save cache to file in development
+const persistCache = () => {
+  if (process.env.NODE_ENV === 'development') {
+    const data = otpCache.keys().reduce((acc: any, key) => {
+      acc[key] = otpCache.get(key);
+      return acc;
+    }, {});
+    fs.writeFileSync(PERSISTENT_CACHE_PATH, JSON.stringify(data));
+  }
+};
+
+// Helper to load cache from file in development
+const loadCache = () => {
+  if (process.env.NODE_ENV === 'development' && fs.existsSync(PERSISTENT_CACHE_PATH)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(PERSISTENT_CACHE_PATH, 'utf8'));
+      Object.keys(data).forEach(key => {
+        const otpData = data[key];
+        const remainingTTL = (otpData.createdAt + (OTP_CONFIG.EXPIRY_MINUTES * 60 * 1000)) - Date.now();
+        if (remainingTTL > 0) {
+          otpCache.set(key, otpData, Math.floor(remainingTTL / 1000));
+        }
+      });
+    } catch (e) {
+      console.error('Failed to load OTP cache:', e);
+    }
+  }
+};
+
+// Initial load
+loadCache();
 
 /**
  * Generate a random 6-digit OTP
@@ -39,18 +75,20 @@ const createTransporter = () => {
 export const sendOtpEmail = async (email: string): Promise<void> => {
   // Generate OTP
   const otp = generateOtp();
-  
+
   // Store OTP in cache with metadata
   const otpData: OtpData = {
     otp,
     createdAt: Date.now(),
     attempts: 0,
   };
-  otpCache.set(email, otpData);
-  
+  const normalizedEmail = email.toLowerCase();
+  otpCache.set(normalizedEmail, otpData);
+  persistCache();
+
   // Create email transporter
   const transporter = createTransporter();
-  
+
   // Email content
   const mailOptions = {
     from: `"Rojgari India" <${process.env.SMTP_USER}>`,
@@ -106,7 +144,7 @@ Regards,
 Rojgari India Team
     `,
   };
-  
+
   // Send email
   await transporter.sendMail(mailOptions);
 };
@@ -115,28 +153,30 @@ Rojgari India Team
  * Verify OTP
  */
 export const verifyOtp = (email: string, otp: string): { success: boolean; message: string } => {
-  const otpData = otpCache.get<OtpData>(email);
-  
+  const normalizedEmail = email.toLowerCase();
+  const otpData = otpCache.get<OtpData>(normalizedEmail);
+
   if (!otpData) {
     return {
       success: false,
       message: 'OTP expired or not found',
     };
   }
-  
+
   // Check max attempts
   if (otpData.attempts >= OTP_CONFIG.MAX_ATTEMPTS) {
-    otpCache.del(email);
+    otpCache.del(normalizedEmail);
     return {
       success: false,
       message: 'Maximum verification attempts exceeded. Please request a new OTP',
     };
   }
-  
+
   // Increment attempts
   otpData.attempts += 1;
-  otpCache.set(email, otpData);
-  
+  otpCache.set(normalizedEmail, otpData);
+  persistCache();
+
   // Verify OTP
   if (otpData.otp !== otp) {
     return {
@@ -144,20 +184,22 @@ export const verifyOtp = (email: string, otp: string): { success: boolean; messa
       message: 'Invalid OTP',
     };
   }
-  
+
   // Check expiry (10 minutes)
   const now = Date.now();
   const expiryTime = OTP_CONFIG.EXPIRY_MINUTES * 60 * 1000;
   if (now - otpData.createdAt > expiryTime) {
-    otpCache.del(email);
+    otpCache.del(normalizedEmail);
+    persistCache();
     return {
       success: false,
       message: 'OTP expired',
     };
   }
-  
+
   // Success - delete OTP
-  otpCache.del(email);
+  otpCache.del(normalizedEmail);
+  persistCache();
   return {
     success: true,
     message: 'OTP verified successfully',

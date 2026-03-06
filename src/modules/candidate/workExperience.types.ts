@@ -8,6 +8,7 @@ export interface WorkExperience {
   salary_period: string;
   current_wages?: number;
   is_current: boolean;
+  current_state?: string;
   current_city?: string;
   current_village?: string;
   created_at?: Date;
@@ -21,6 +22,7 @@ export interface CreateWorkExperienceDTO {
   salary_period?: string;
   current_wages?: number;
   is_current?: boolean;
+  current_state?: string;
   current_city?: string;
   current_village?: string;
 }
