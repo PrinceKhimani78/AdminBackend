@@ -3,6 +3,7 @@ import candidateProfileRoutes from '../modules/candidate/candidateProfile.routes
 import lookupRoutes from '../modules/lookup/lookup.routes';
 import otpRoutes from '../modules/auth/otp.routes';
 import authRoutes from '../modules/auth/auth.routes';
+import adminAuthRoutes from '../modules/auth/adminAuth.routes';
 import uploadPhotoRoutes from './upload.routes';
 import { handleMulterError } from '../middleware/multerError.middleware';
 
@@ -11,6 +12,7 @@ const router = Router();
 // Auth routes (OTP) - Keep separate as it's authentication
 router.use('/', otpRoutes);
 router.use('/auth', authRoutes);
+router.use('/admin/auth', adminAuthRoutes);
 
 // Standalone photo upload (frontend compatibility)
 router.use('/', uploadPhotoRoutes);
