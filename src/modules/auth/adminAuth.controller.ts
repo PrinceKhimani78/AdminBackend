@@ -5,12 +5,20 @@ import Admin from '../../models/admin.model';
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body; // email field now acts as identifier (email or username)
 
-        // 1. Find admin
-        const admin = await Admin.findOne({ where: { email } });
+        // 1. Find admin by email or username
+        const admin = await Admin.findOne({
+            where: {
+                [require('sequelize').Op.or]: [
+                    { email: email },
+                    { username: email }
+                ]
+            }
+        });
+
         if (!admin) {
-            res.status(401).json({ success: false, message: 'Invalid email or password' });
+            res.status(401).json({ success: false, message: 'Invalid email/username or password' });
             return;
         }
 
@@ -41,26 +49,39 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     }
 };
 
-// Optional: Initial admin setup helper (to be used once or via seeder)
-export const createInitialAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// Create a new admin (Superadmin only)
+export const createAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email, password, name, secretKey } = req.body;
+        const { email, username, password, name, role } = req.body;
 
-        // Very basic protection for this helper
-        if (secretKey !== process.env.ADMIN_SETUP_SECRET) {
-            res.status(403).json({ success: false, message: 'Forbidden' });
+        const existingEmail = await Admin.findOne({ where: { email } });
+        if (existingEmail) {
+            res.status(400).json({ success: false, message: 'Admin with this email already exists' });
             return;
+        }
+
+        if (username) {
+            const existingUser = await Admin.findOne({ where: { username } });
+            if (existingUser) {
+                res.status(400).json({ success: false, message: 'Admin with this username already exists' });
+                return;
+            }
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const admin = await Admin.create({
             email,
+            username,
             password: hashedPassword,
             name,
-            role: 'superadmin'
+            role: role || 'admin'
         });
 
-        res.status(201).json({ success: true, data: { email: admin.email } });
+        res.status(201).json({
+            success: true,
+            message: 'Admin created successfully',
+            data: { id: admin.id, email: admin.email, role: admin.role, name: admin.name }
+        });
     } catch (error) {
         next(error);
     }

@@ -4,6 +4,7 @@ import { sequelize } from '../config/database';
 class Admin extends Model {
     public id!: string;
     public name!: string;
+    public username!: string;
     public email!: string;
     public password!: string;
     public role!: string; // 'superadmin', 'admin', etc.
@@ -21,6 +22,11 @@ Admin.init(
         name: {
             type: DataTypes.STRING(255),
             allowNull: false,
+        },
+        username: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            unique: true,
         },
         email: {
             type: DataTypes.STRING(255),
