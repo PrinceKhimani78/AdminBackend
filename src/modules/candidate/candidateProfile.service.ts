@@ -12,15 +12,37 @@ import { CANDIDATE_PROFILE_MESSAGES, CANDIDATE_STATUS, SORT_ORDER } from '../../
 /**
  * Get all candidate profiles with pagination
  */
-export const getAllCandidates = async (page: number = 1, limit: number = 10) => {
+export const getAllCandidates = async (page: number = 1, limit: number = 10, recruiterId?: string) => {
   return handleServiceCall(async () => {
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await CandidateModel.findAndCountAll({
+    const findOptions: any = {
       limit,
       offset,
       order: [['created_at', SORT_ORDER.DESC]],
-    });
+    };
+
+    // If recruiterId is provided, join with JobApplication and Job to filter
+    if (recruiterId) {
+      const JobApplication = (await import('../../models/jobApplication.model')).default;
+      const Job = (await import('../../models/job.model')).default;
+
+      findOptions.include = [
+        {
+          model: JobApplication,
+          required: true,
+          include: [
+            {
+              model: Job,
+              required: true,
+              where: { recruiter_id: recruiterId },
+            },
+          ],
+        },
+      ];
+    }
+
+    const { count, rows } = await CandidateModel.findAndCountAll(findOptions);
 
     return {
       profiles: rows,

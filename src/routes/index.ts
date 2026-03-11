@@ -4,21 +4,27 @@ import lookupRoutes from '../modules/lookup/lookup.routes';
 import otpRoutes from '../modules/auth/otp.routes';
 import authRoutes from '../modules/auth/auth.routes';
 import adminAuthRoutes from '../modules/auth/adminAuth.routes';
+import recruiterAuthRoutes from '../modules/auth/recruiterAuth.routes';
+import jobRoutes from '../modules/jobs/job.routes';
 import uploadPhotoRoutes from './upload.routes';
 import { handleMulterError } from '../middleware/multerError.middleware';
 
 const router = Router();
 
-// Auth routes (OTP) - Keep separate as it's authentication
+// Auth routes (OTP and standardized logins)
 router.use('/', otpRoutes);
-router.use('/auth', authRoutes);
-router.use('/admin/auth', adminAuthRoutes);
+router.use('/auth', authRoutes); // Candidates
+router.use('/admin/auth', adminAuthRoutes); // Admins
+router.use('/recruiter/auth', recruiterAuthRoutes); // Recruiters
 
 // Standalone photo upload (frontend compatibility)
 router.use('/', uploadPhotoRoutes);
 
 // Candidate profile routes (includes upload, resume, CRUD operations)
 router.use('/candidate-profile', candidateProfileRoutes);
+
+// Jobs routes
+router.use('/jobs', jobRoutes);
 
 // Alias: /resume -> /candidate-profile for frontend compatibility
 router.use('/resume', candidateProfileRoutes);

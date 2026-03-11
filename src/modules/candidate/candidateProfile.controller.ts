@@ -10,16 +10,27 @@ import {
   FILE_EXTENSIONS,
 } from '../../constants/candidateProfile.constants';
 
+// Extended request to handle the user from the JWT middleware
+interface AuthRequest extends Request {
+    user?: any;
+}
+
 /**
  * Get all candidate profiles with pagination
  * GET /api/candidate-profile?page=1&limit=10
  */
-export const getAllProfiles = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllProfiles = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
     const limit = parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT;
 
-    const result = await candidateService.getAllCandidates(page, limit);
+    // Determine if we should filter by recruiter
+    let recruiterId: string | undefined = undefined;
+    if (req.user.role !== 'superadmin') {
+      recruiterId = req.user.id;
+    }
+
+    const result = await candidateService.getAllCandidates(page, limit, recruiterId);
     sendSuccess(res, result, CANDIDATE_PROFILE_MESSAGES.SUCCESS.PROFILES_RETRIEVED);
   } catch (error) {
     next(error);

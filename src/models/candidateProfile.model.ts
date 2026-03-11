@@ -48,6 +48,7 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public pref_village?: string;
   public readonly created_at?: Date;
   public readonly updated_at?: Date;
+  public readonly applications?: any[];
 }
 
 CandidateModel.init(
