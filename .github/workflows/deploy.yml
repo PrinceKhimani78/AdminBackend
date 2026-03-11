@@ -39,4 +39,6 @@ jobs:
           npm install
           npm run db:migrate
           npm run build
-          pm2 restart rojgari-backend
+          pm2 delete rojgari-backend || true
+          pm2 start dist/src/index.js --name rojgari-backend
+          pm2 save
