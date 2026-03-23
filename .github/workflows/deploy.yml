@@ -72,7 +72,7 @@ jobs:
 
           # Restart app safely
           pm2 delete rojgari-backend || true
-          pm2 start dist/src/index.js --name rojgari-backend
+          pm2 start dist/server.js --name rojgari-backend
           pm2 save
 
           echo "✅ AdminBackend Deployment complete!"
