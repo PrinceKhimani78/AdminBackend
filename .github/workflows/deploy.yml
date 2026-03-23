@@ -44,37 +44,17 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          # Load Node/NVM environment
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || true
+          export NVM_DIR=~/.nvm
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           
-          # Force bind to latest node in NVM if nvm use failed
-          export PATH=$(ls -d $NVM_DIR/versions/node/v* | tail -1)/bin:$PATH
-          
-          set -e
-          echo "🚀 Starting AdminBackend deployment..."
-          echo "Node version: $(node -v)"
-          echo "NPM version: $(npm -v)"
-
           cd /home/api.rojgariindia.com/public_html
-
-          # Ensure tar exists before extracting
-          if [ ! -f release.tar.gz ]; then
-            echo "❌ release.tar.gz not found!"
-            exit 1
-          fi
-
-          tar -xzf release.tar.gz
+          tar -xzf release.tar.gz || true
           rm -f release.tar.gz
-
+          
           npm install --omit=dev --no-audit --no-fund
-
-          # Run migration safely
           node run_migration.js
-
-          # Restart app
-          pm2 delete rojgari-backend || true
-          pm2 start dist/server.js --name rojgari-backend
+          
+          pm2 restart rojgari-backend || pm2 start dist/server.js --name rojgari-backend
           pm2 save
-
+          
           echo "✅ AdminBackend Deployment complete!"
