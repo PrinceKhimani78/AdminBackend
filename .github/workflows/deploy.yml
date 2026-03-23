@@ -47,14 +47,25 @@ jobs:
           set -e
           echo "🚀 Starting AdminBackend deployment..."
 
-          # Load Node properly
+          echo "📍 USER: $(whoami)"
+          echo "📍 HOME: $HOME"
+          echo "📍 PATH: $PATH"
+
+          # Safe NVM loading (NO CRASH)
           export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+          if [ -s "$NVM_DIR/nvm.sh" ]; then
+            echo "✅ NVM found, loading..."
+            source "$NVM_DIR/nvm.sh"
+          else
+            echo "⚠️ NVM not found, installing..."
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+            source "$NVM_DIR/nvm.sh"
+          fi
+
+          # Ensure Node works
           nvm install 20
           nvm use 20
-
-          # Fix PATH for PM2 + scripts
-          export PATH=$NVM_DIR/versions/node/$(nvm version)/bin:$PATH
 
           echo "Node: $(node -v)"
           echo "NPM: $(npm -v)"
