@@ -44,7 +44,8 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          source ~/.nvm/nvm.sh || true
+          export NVM_DIR=~/.nvm
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           cd /home/api.rojgariindia.com/public_html
           tar -xzf release.tar.gz || true
           rm -f release.tar.gz
