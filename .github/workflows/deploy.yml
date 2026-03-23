@@ -35,10 +35,12 @@ jobs:
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           cd /home/api.rojgariindia.com/public_html
           git reset --hard
+          git clean -fd
           git pull origin main
-          npm install
+          npm cache clean --force || true
+          NODE_OPTIONS="--max-old-space-size=512" npm install
           npm run db:migrate
-          npm run build
+          NODE_OPTIONS="--max-old-space-size=512" npm run build
           pm2 delete rojgari-backend || true
           pm2 start dist/src/index.js --name rojgari-backend
           pm2 save
