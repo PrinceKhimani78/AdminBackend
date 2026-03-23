@@ -44,16 +44,36 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          export NVM_DIR=~/.nvm
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          set -e
+
+          echo "🚀 Starting AdminBackend deployment..."
+
+          # Load NVM properly (IMPORTANT FIX)
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+
+          # Ensure Node is available
+          nvm use 16 || nvm install 16
+          node -v
+          npm -v
+
           cd /home/api.rojgariindia.com/public_html
-          git reset --hard
-          git clean -fd
-          git pull origin main
-          tar -xzf release.tar.gz || true
+
+          # Ensure tar exists before extracting
+          if [ ! -f release.tar.gz ]; then
+            echo "❌ release.tar.gz not found!"
+            exit 1
+          fi
+
+          tar -xzf release.tar.gz
           rm -f release.tar.gz
+
           npm install
           npm run db:migrate
+
+          # Restart app safely
           pm2 delete rojgari-backend || true
           pm2 start dist/src/index.js --name rojgari-backend
           pm2 save
+
+          echo "✅ AdminBackend Deployment complete!"
