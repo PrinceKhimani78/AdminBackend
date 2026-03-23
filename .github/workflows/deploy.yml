@@ -44,8 +44,12 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          export NVM_DIR=~/.nvm
+          source ~/.bashrc || true
+          source ~/.profile || true
+          export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm alias default $(nvm ls | grep -o 'v[0-9]*\.[0-9]*\.[0-9]*' | tail -1) || true
+          nvm use default || true
           cd /home/api.rojgariindia.com/public_html
           tar -xzf release.tar.gz || true
           rm -f release.tar.gz
