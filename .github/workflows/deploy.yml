@@ -44,16 +44,16 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          source ~/.bashrc || true
-          source ~/.profile || true
-          export NVM_DIR="$HOME/.nvm"
+          export NVM_DIR=~/.nvm
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm alias default $(nvm ls | grep -o 'v[0-9]*\.[0-9]*\.[0-9]*' | tail -1) || true
-          nvm use default || true
           cd /home/api.rojgariindia.com/public_html
+          git reset --hard
+          git clean -fd
+          git pull origin main
           tar -xzf release.tar.gz || true
           rm -f release.tar.gz
-          npm install --omit=dev --no-audit --no-fund
-          node run_migration.js
-          pm2 restart rojgari-backend || pm2 start dist/src/index.js --name rojgari-backend
+          npm install
+          npm run db:migrate
+          pm2 delete rojgari-backend || true
+          pm2 start dist/src/index.js --name rojgari-backend
           pm2 save
