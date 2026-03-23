@@ -46,10 +46,7 @@ jobs:
         script: |
           export NVM_DIR=~/.nvm
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-          # Force Node 20 for Sharp 0.34.5 compatibility
-          nvm install 20 || true
-          nvm use 20 || true
+          nvm use 20 || nvm install 20
 
           cd /home/api.rojgariindia.com/public_html
           tar -xzf release.tar.gz || true
@@ -58,10 +55,13 @@ jobs:
           npm install --omit=dev --no-audit --no-fund
           node run_migration.js
 
-          pm2 restart rojgari-backend || pm2 start dist/server.js --name rojgari-backend
+          # Forced clean restart to ensure .env is picked up from PWD
+          pm2 delete rojgari-backend || true
+          pm2 start dist/server.js --name rojgari-backend --cwd /home/api.rojgariindia.com/public_html
           pm2 save
 
-          echo "✅ AdminBackend Deployment complete! Checking status..."
-          sleep 3
+          echo "✅ AdminBackend Deployment complete! Status check..."
+          sleep 5
           pm2 list
+          pm2 show rojgari-backend
           pm2 logs rojgari-backend --lines 50 --nostream || true
