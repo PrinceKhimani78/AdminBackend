@@ -8,6 +8,7 @@ import { CreateWorkExperienceDTO, CreateSkillDTO, CreateCertificationDTO } from 
 import { sequelize } from '../../config/database';
 import { handleServiceCall } from '../../utils/serviceHandlerUtil';
 import { CANDIDATE_PROFILE_MESSAGES, CANDIDATE_STATUS, SORT_ORDER } from '../../constants/candidateProfile.constants';
+import { Op } from 'sequelize';
 
 /**
  * Get all candidate profiles with pagination
@@ -24,22 +25,29 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
 
     // If recruiterId is provided, join with JobApplication and Job to filter
     if (recruiterId) {
-      const JobApplication = (await import('../../models/jobApplication.model')).default;
-      const Job = (await import('../../models/job.model')).default;
+      const Recruiter = (await import('../../models/recruiter.model')).default;
+      const IndustryModel = (await import('../../models/industry.model')).default;
 
-      findOptions.include = [
-        {
-          model: JobApplication,
-          required: true,
-          include: [
-            {
-              model: Job,
-              required: true,
-              where: { recruiter_id: recruiterId },
-            },
-          ],
-        },
-      ];
+      const recruiter = await Recruiter.findByPk(recruiterId, {
+        include: [{
+          model: IndustryModel,
+          as: 'industries',
+          attributes: ['name']
+        }]
+      });
+
+      if (recruiter && (recruiter as any).industries && (recruiter as any).industries.length > 0) {
+        const approvedIndustries = (recruiter as any).industries.map((ind: any) => ind.name);
+        findOptions.where = {
+          ...findOptions.where,
+          job_category: { [Op.in]: approvedIndustries }
+        };
+      } else {
+        findOptions.where = {
+          ...findOptions.where,
+          id: { [Op.is]: null } // Impossible condition, returns 0 candidates
+        };
+      }
     }
 
     const { count, rows } = await CandidateModel.findAndCountAll(findOptions);
