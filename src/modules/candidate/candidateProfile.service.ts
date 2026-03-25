@@ -23,11 +23,63 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
       order: [['created_at', SORT_ORDER.DESC]],
     };
 
-    /* Temporarily disabled for diagnosis
+    // If recruiterId is provided, join with JobApplication and Job to filter
     if (recruiterId) {
-      ...
+      const Recruiter = (await import('../../models/recruiter.model')).default;
+      const IndustryModel = (await import('../../models/industry.model')).default;
+
+      const recruiter = await Recruiter.findByPk(recruiterId, {
+        include: [{
+          model: IndustryModel,
+          as: 'industries',
+          attributes: ['name']
+        }]
+      });
+
+      if (recruiter) {
+        let approvedIndustries = (recruiter as any).industries ? (recruiter as any).industries.map((ind: any) => ind.name) : [];
+        
+        // Fallback to pending_industries
+        if (approvedIndustries.length === 0) {
+          let pending = (recruiter as any).pending_industries || [];
+          if (typeof pending === 'string') {
+            try { pending = JSON.parse(pending); } catch (e) { pending = []; }
+          }
+          if (Array.isArray(pending) && pending.length > 0) {
+            approvedIndustries = pending;
+          }
+        }
+
+        if (approvedIndustries.length > 0) {
+          const orConditions: any[] = [
+            { preferred_industry: { [Op.in]: approvedIndustries } },
+            { job_category: { [Op.in]: approvedIndustries } }
+          ];
+
+          // Smart keyword matching for major sectors
+          approvedIndustries.forEach((ind: string) => {
+            const lowInd = ind.toLowerCase();
+            if (lowInd.includes('it') || lowInd.includes('information technology')) {
+              orConditions.push({ job_category: { [Op.like]: '%IT%' } });
+              orConditions.push({ job_category: { [Op.like]: '%Developer%' } });
+              orConditions.push({ job_category: { [Op.like]: '%Software%' } });
+            }
+            if (lowInd.includes('chemical')) {
+              orConditions.push({ job_category: { [Op.like]: '%Chem%' } });
+            }
+            if (lowInd.includes('manufacturing') || lowInd.includes('engineering')) {
+              orConditions.push({ job_category: { [Op.like]: '%Engi%' } });
+              orConditions.push({ job_category: { [Op.like]: '%Production%' } });
+            }
+          });
+
+          findOptions.where = {
+            ...findOptions.where,
+            [Op.or]: orConditions
+          };
+        }
+      }
     }
-    */
 
     const { count, rows } = await CandidateModel.findAndCountAll(findOptions);
 
