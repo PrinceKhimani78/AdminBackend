@@ -274,3 +274,114 @@ export const getRecruiterProfile = async (req: Request, res: Response, next: Nex
         next(error);
     }
 };
+
+export const updateRecruiterProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const recruiterId = (req as any).user.id;
+        const { companyName, phone } = req.body;
+
+        const recruiter = await Recruiter.findByPk(recruiterId);
+        if (!recruiter) {
+            res.status(404).json({ success: false, message: 'Recruiter not found' });
+            return;
+        }
+
+        if (companyName) recruiter.company_name = companyName;
+        if (phone) recruiter.mobile_number = phone;
+
+        await recruiter.save();
+        res.status(200).json({ success: true, message: 'Profile updated successfully', data: recruiter });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getRecruiterStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const recruiterId = (req as any).user.id;
+        
+        const Job = (await import('../../models/job.model')).default;
+        const JobApplication = (await import('../../models/jobApplication.model')).default;
+        const CandidateProfile = (await import('../../models/candidateProfile.model')).default;
+        const IndustryModel = (await import('../../models/industry.model')).default;
+
+        // 1. Total Posted Jobs
+        const postedJobsCount = await Job.count({ where: { recruiter_id: recruiterId } });
+
+        // 2. New Applications (count with status 'Applied')
+        const newApplicationsCount = await JobApplication.count({
+            where: { status: 'Applied' },
+            include: [{
+                model: Job,
+                required: true,
+                where: { recruiter_id: recruiterId }
+            }]
+        });
+
+        // 3. Total Candidates (filtered by recruiter's industries)
+        const recruiter = await Recruiter.findByPk(recruiterId, {
+            include: [{
+                model: IndustryModel,
+                as: 'industries',
+                attributes: ['name']
+            }]
+        });
+
+        let totalCandidates = 0;
+        if (recruiter && (recruiter as any).industries && (recruiter as any).industries.length > 0) {
+            const approvedIndustries = (recruiter as any).industries.map((ind: any) => ind.name);
+            totalCandidates = await CandidateProfile.count({
+                where: {
+                    job_category: { [Op.in]: approvedIndustries }
+                }
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                postedJobs: postedJobsCount,
+                newApplications: newApplicationsCount,
+                totalCandidates: totalCandidates,
+                messages: 0 // Placeholder
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getRecentApplicants = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const recruiterId = (req as any).user.id;
+        
+        const Job = (await import('../../models/job.model')).default;
+        const JobApplication = (await import('../../models/jobApplication.model')).default;
+        const CandidateProfile = (await import('../../models/candidateProfile.model')).default;
+
+        const applications = await JobApplication.findAll({
+            limit: 5,
+            order: [['applied_at', 'DESC']],
+            include: [
+                {
+                    model: Job,
+                    required: true,
+                    where: { recruiter_id: recruiterId },
+                    attributes: ['id', 'title']
+                },
+                {
+                    model: CandidateProfile,
+                    required: true,
+                    attributes: ['id', 'full_name', 'current_job_role', 'location', 'profile_photo']
+                }
+            ]
+        });
+
+        res.status(200).json({
+            success: true,
+            data: applications
+        });
+    } catch (error) {
+        next(error);
+    }
+};

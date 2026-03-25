@@ -6,6 +6,9 @@ const router = Router();
 
 // Recruiter Profile (Recruiter self)
 router.get('/profile', authenticate, recruiterController.getRecruiterProfile);
+router.put('/profile', authenticate, recruiterController.updateRecruiterProfile);
+router.get('/stats', authenticate, recruiterController.getRecruiterStats);
+router.get('/recent-applicants', authenticate, recruiterController.getRecentApplicants);
 router.post('/request-industry', authenticate, recruiterController.requestIndustry);
 
 // Admin Endpoints
