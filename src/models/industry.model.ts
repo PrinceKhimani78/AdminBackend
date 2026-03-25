@@ -15,7 +15,7 @@ IndustryModel.init(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING(150), allowNull: false },
-    slug: { type: DataTypes.STRING(150), allowNull: false, unique: true },
+    slug: { type: DataTypes.STRING(150), allowNull: true, unique: true },
     created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   },
   { sequelize, tableName: 'industries', timestamps: false }
