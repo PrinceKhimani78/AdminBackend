@@ -6,6 +6,7 @@ import authRoutes from '../modules/auth/auth.routes';
 import adminAuthRoutes from '../modules/auth/adminAuth.routes';
 import recruiterAuthRoutes from '../modules/auth/recruiterAuth.routes';
 import jobRoutes from '../modules/jobs/job.routes';
+import recruiterRoutes from '../modules/recruiter/recruiter.routes';
 import uploadPhotoRoutes from './upload.routes';
 import { handleMulterError } from '../middleware/multerError.middleware';
 
@@ -16,6 +17,7 @@ router.use('/', otpRoutes);
 router.use('/auth', authRoutes); // Candidates
 router.use('/admin/auth', adminAuthRoutes); // Admins
 router.use('/recruiter/auth', recruiterAuthRoutes); // Recruiters
+router.use('/recruiter', recruiterRoutes); // Recruiter profile & admin management
 
 // Standalone photo upload (frontend compatibility)
 router.use('/', uploadPhotoRoutes);

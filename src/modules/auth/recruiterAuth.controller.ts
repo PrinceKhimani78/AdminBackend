@@ -27,26 +27,19 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             full_name: fullName,
             company_name: companyName,
             mobile_number: mobileNumber || null,
-            status: 'Active',
+            status: 'PendingApproval',
         });
-
-        // 4. Generate token immediately upon registration
-        const token = jwt.sign(
-            { id: recruiter.id, email: recruiter.email, role: 'recruiter' },
-            process.env.JWT_SECRET || 'secret',
-            { expiresIn: '24h' }
-        );
 
         res.status(201).json({
             success: true,
-            message: 'Recruiter registered successfully',
+            message: 'we are working on your request',
             data: {
-                token,
                 user: {
                     id: recruiter.id,
                     email: recruiter.email,
                     fullName: recruiter.full_name,
-                    companyName: recruiter.company_name
+                    companyName: recruiter.company_name,
+                    status: (recruiter as any).status
                 }
             }
         });
@@ -74,7 +67,18 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
             return;
         }
 
-        // 3. Generate token
+        // 3. Check approval status
+        if ((recruiter as any).status === 'PendingApproval') {
+            res.status(403).json({ success: false, message: 'we are working on your request' });
+            return;
+        }
+
+        if ((recruiter as any).status === 'Inactive') {
+            res.status(403).json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+            return;
+        }
+
+        // 4. Generate token
         const token = jwt.sign(
             { id: recruiter.id, email: recruiter.email, role: 'recruiter' },
             process.env.JWT_SECRET || 'secret',
@@ -90,7 +94,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
                     id: recruiter.id,
                     email: recruiter.email,
                     fullName: recruiter.full_name,
-                    companyName: recruiter.company_name
+                    companyName: recruiter.company_name,
+                    status: (recruiter as any).status
                 }
             }
         });

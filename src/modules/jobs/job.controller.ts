@@ -8,13 +8,18 @@ interface AuthRequest extends Request {
         id: string;
         email: string;
         role: string;
+        type?: string;
     }
 }
 
-// 1. Create a new job listing (Recruiter only)
+// 1. Create a new job listing (Recruiter or Admin)
 export const createJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.user || (req.user.role !== 'recruiter' && req.user.role !== 'superadmin')) {
+        const isAdmin = req.user?.type === 'admin';
+        const isRecruiter = req.user?.role === 'recruiter';
+        const isSuperAdmin = req.user?.role === 'superadmin';
+
+        if (!req.user || (!isAdmin && !isRecruiter && !isSuperAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied. Only recruiters and admins can post jobs.' });
             return;
         }
@@ -158,6 +163,26 @@ export const getAllActiveJobs = async (req: Request, res: Response, next: NextFu
             success: true,
             count: jobs.length,
             data: jobs
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// 4.5. Get a single active job by ID (Publicly accessible for candidates)
+export const getPublicJobById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const job = await Job.findOne({ where: { id, status: 'Active' } });
+
+        if (!job) {
+            res.status(404).json({ success: false, message: 'Job not found or not active.' });
+            return;
+        }
+
+        res.status(200).json({
+            success: true,
+            data: job
         });
     } catch (error) {
         next(error);

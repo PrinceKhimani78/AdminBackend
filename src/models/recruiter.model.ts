@@ -1,6 +1,8 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
 import Job from './job.model';
+import IndustryModel from './industry.model';
+import RecruiterIndustry from './recruiterIndustry.model';
 
 class Recruiter extends Model {
     public id!: string;
@@ -9,7 +11,9 @@ class Recruiter extends Model {
     public full_name!: string;
     public company_name!: string;
     public mobile_number!: string;
-    public status!: 'Active' | 'Inactive';
+    public status!: 'Active' | 'Inactive' | 'PendingApproval';
+    public pending_industries!: any; // Store as JSON
+    public denied_industries!: any; // Store as JSON
     public readonly created_at!: Date;
     public readonly updated_at!: Date;
 
@@ -46,9 +50,19 @@ Recruiter.init(
             allowNull: true,
         },
         status: {
-            type: DataTypes.ENUM('Active', 'Inactive'),
+            type: DataTypes.ENUM('Active', 'Inactive', 'PendingApproval'),
             allowNull: false,
-            defaultValue: 'Active',
+            defaultValue: 'PendingApproval',
+        },
+        pending_industries: {
+            type: DataTypes.JSON,
+            allowNull: true,
+            defaultValue: [],
+        },
+        denied_industries: {
+            type: DataTypes.JSON,
+            allowNull: true,
+            defaultValue: [],
         },
     },
     {
@@ -69,6 +83,20 @@ Recruiter.hasMany(Job, {
 Job.belongsTo(Recruiter, {
     foreignKey: 'recruiter_id',
     as: 'recruiter'
+});
+
+Recruiter.belongsToMany(IndustryModel, {
+    through: RecruiterIndustry,
+    foreignKey: 'recruiter_id',
+    otherKey: 'industry_id',
+    as: 'industries'
+});
+
+IndustryModel.belongsToMany(Recruiter, {
+    through: RecruiterIndustry,
+    foreignKey: 'industry_id',
+    otherKey: 'recruiter_id',
+    as: 'recruiters'
 });
 
 export default Recruiter;

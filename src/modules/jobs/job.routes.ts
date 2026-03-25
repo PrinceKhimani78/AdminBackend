@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { createJob, getMyJobs, updateJobStatus, getAllActiveJobs, getJobById, updateJob } from './job.controller';
+import { createJob, getMyJobs, updateJobStatus, getAllActiveJobs, getJobById, updateJob, getPublicJobById } from './job.controller';
 import { authenticate } from '../../middleware/auth.middleware';
 
 const router = Router();
 
 // Public routes
 router.get('/', getAllActiveJobs);
+router.get('/view/:id', getPublicJobById);
 
 // Protected routes (Require login via authenticate middleware)
 router.use(authenticate);
