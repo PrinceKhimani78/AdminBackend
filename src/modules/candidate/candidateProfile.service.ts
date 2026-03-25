@@ -27,6 +27,7 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
     if (recruiterId) {
       const Recruiter = (await import('../../models/recruiter.model')).default;
       const IndustryModel = (await import('../../models/industry.model')).default;
+      const { INDUSTRY_JOB_MAP } = await import('../../constants/industryMapping');
 
       const recruiter = await Recruiter.findByPk(recruiterId, {
         include: [{
@@ -39,7 +40,7 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
       if (recruiter) {
         let approvedIndustries = (recruiter as any).industries ? (recruiter as any).industries.map((ind: any) => ind.name) : [];
         
-        // Fallback to pending_industries
+        // Fallback to pending_industries if no approved ones yet
         if (approvedIndustries.length === 0) {
           let pending = (recruiter as any).pending_industries || [];
           if (typeof pending === 'string') {
@@ -51,25 +52,30 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
         }
 
         if (approvedIndustries.length > 0) {
+          // Expand the search to include all sub-roles from the INDUSTRY_JOB_MAP
+          const expandedSearchTerms = new Set<string>();
+          approvedIndustries.forEach((industry: string) => {
+            expandedSearchTerms.add(industry); // Add parent
+            if (INDUSTRY_JOB_MAP[industry]) {
+              INDUSTRY_JOB_MAP[industry].forEach((role: string) => expandedSearchTerms.add(role));
+            }
+          });
+
+          const searchTerms = Array.from(expandedSearchTerms);
+          
+          // Construct keywords for LIKE search as a further fallback
           const orConditions: any[] = [
-            { preferred_industry: { [Op.in]: approvedIndustries } },
-            { job_category: { [Op.in]: approvedIndustries } }
+            { preferred_industry: { [Op.in]: searchTerms } },
+            { job_category: { [Op.in]: searchTerms } }
           ];
 
-          // Smart keyword matching for major sectors
-          approvedIndustries.forEach((ind: string) => {
-            const lowInd = ind.toLowerCase();
-            if (lowInd.includes('it') || lowInd.includes('information technology')) {
-              orConditions.push({ job_category: { [Op.like]: '%IT%' } });
-              orConditions.push({ job_category: { [Op.like]: '%Developer%' } });
-              orConditions.push({ job_category: { [Op.like]: '%Software%' } });
-            }
-            if (lowInd.includes('chemical')) {
-              orConditions.push({ job_category: { [Op.like]: '%Chem%' } });
-            }
-            if (lowInd.includes('manufacturing') || lowInd.includes('engineering')) {
-              orConditions.push({ job_category: { [Op.like]: '%Engi%' } });
-              orConditions.push({ job_category: { [Op.like]: '%Production%' } });
+          // Add LIKE matches for each approved industry (e.g., if approved for "IT", also check roles containing "IT")
+          approvedIndustries.forEach((industry: string) => {
+            // Clean industry name for keyword search (e.g. remove " (IT)")
+            const keyword = industry.replace(/\(.*\)/, '').trim();
+            if (keyword.length > 2) {
+              orConditions.push({ job_category: { [Op.like]: `%${keyword}%` } });
+              orConditions.push({ preferred_industry: { [Op.like]: `%${keyword}%` } });
             }
           });
 
