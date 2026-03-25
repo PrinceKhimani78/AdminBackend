@@ -22,7 +22,6 @@ router.get('/:id/documents', validateUUID, checkValidation, authenticate, candid
 router.post('/:id/upload',
   validateUUID,
   checkValidation,
-  authenticate,
   uploadCandidateFiles,
   validateFileType,
   validateFileSize(5), // Max 5MB for photos
@@ -31,7 +30,7 @@ router.post('/:id/upload',
 );
 
 // Streaming download endpoints
-router.get('/:id/download/photo', validateUUID, checkValidation, authenticate, candidateController.downloadProfilePhoto);
-router.get('/:id/download/resume', validateUUID, checkValidation, authenticate, candidateController.downloadResume);
+router.get('/:id/download/photo', validateUUID, checkValidation, candidateController.downloadProfilePhoto);
+router.get('/:id/download/resume', validateUUID, checkValidation, candidateController.downloadResume);
 
 export default router;
