@@ -49,6 +49,7 @@ const migrationCommands = [
     "ALTER TABLE recruiters MODIFY COLUMN status ENUM('Active', 'Inactive', 'PendingApproval') NOT NULL DEFAULT 'PendingApproval'",
     "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS pending_industries JSON NULL",
     "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS denied_industries JSON NULL",
+    "CREATE TABLE IF NOT EXISTS recruiter_industries (recruiter_id CHAR(36) NOT NULL, industry_id INT NOT NULL, PRIMARY KEY (recruiter_id, industry_id), FOREIGN KEY (recruiter_id) REFERENCES recruiters(id) ON DELETE CASCADE, FOREIGN KEY (industry_id) REFERENCES industries(id) ON DELETE CASCADE)",
     "CREATE TABLE IF NOT EXISTS jobs (id CHAR(36) PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT NOT NULL, requirements TEXT NULL, location VARCHAR(255) NOT NULL, job_category VARCHAR(100) NOT NULL, employment_type VARCHAR(100) NULL DEFAULT 'Full-time', salary_range VARCHAR(100) NULL, experience_required VARCHAR(100) NULL, recruiter_id CHAR(36) NULL, status ENUM('Active', 'Expired', 'Draft') NOT NULL DEFAULT 'Active', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (recruiter_id) REFERENCES recruiters(id) ON DELETE CASCADE)",
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS status ENUM('Active', 'Expired', 'Draft') NOT NULL DEFAULT 'Active' AFTER experience_required",
     "ALTER TABLE jobs MODIFY COLUMN recruiter_id CHAR(36) NULL",
