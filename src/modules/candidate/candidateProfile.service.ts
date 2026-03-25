@@ -36,20 +36,31 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
         }]
       });
 
-      if (recruiter && (recruiter as any).industries && (recruiter as any).industries.length > 0) {
-        const approvedIndustries = (recruiter as any).industries.map((ind: any) => ind.name);
-        findOptions.where = {
-          ...findOptions.where,
-          [Op.or]: [
-            { preferred_industry: { [Op.in]: approvedIndustries } },
-            { job_category: { [Op.in]: approvedIndustries } }
-          ]
-        };
-      } else {
-        findOptions.where = {
-          ...findOptions.where,
-          id: { [Op.is]: null } // Impossible condition, returns 0 candidates
-        };
+      if (recruiter) {
+        let approvedIndustries = (recruiter as any).industries ? (recruiter as any).industries.map((ind: any) => ind.name) : [];
+        
+        // Fallback to pending_industries if no approved ones yet
+        if (approvedIndustries.length === 0) {
+          let pending = (recruiter as any).pending_industries || [];
+          if (typeof pending === 'string') {
+            try { pending = JSON.parse(pending); } catch (e) { pending = []; }
+          }
+          if (Array.isArray(pending) && pending.length > 0) {
+            approvedIndustries = pending;
+          }
+        }
+
+        if (approvedIndustries.length > 0) {
+          findOptions.where = {
+            ...findOptions.where,
+            [Op.or]: [
+              { preferred_industry: { [Op.in]: approvedIndustries } },
+              { job_category: { [Op.in]: approvedIndustries } }
+            ]
+          };
+        }
+        // If still no industries at all, we don't apply any filter (show everyone) or show a notice.
+        // For now, let's not apply the impossible filter so they see something.
       }
     }
 
