@@ -25,7 +25,7 @@ jobs:
       run: npm run build
 
     - name: Compress Target Files
-      run: tar -czf release.tar.gz dist package.json package-lock.json
+      run: tar -czf release.tar.gz dist package.json package-lock.json run_migration.js
 
     - name: Upload Release to Server
       uses: appleboy/scp-action@master
