@@ -73,7 +73,8 @@ const migrationCommands = [
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS contact_number VARCHAR(20) NULL",
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS call_time_range VARCHAR(100) NULL",
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS call_days VARCHAR(100) NULL",
-    "CREATE TABLE IF NOT EXISTS job_applications (id CHAR(36) PRIMARY KEY, job_id CHAR(36) NOT NULL, candidate_id CHAR(36) NOT NULL, status ENUM('Applied', 'Shortlisted', 'Interviewed', 'Rejected', 'Selected') NOT NULL DEFAULT 'Applied', applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+    "CREATE TABLE IF NOT EXISTS job_applications (id CHAR(36) PRIMARY KEY, job_id CHAR(36) NOT NULL, candidate_id CHAR(36) NOT NULL, status ENUM('Applied', 'Shortlisted', 'Interviewed', 'Rejected', 'Selected') NOT NULL DEFAULT 'Applied', applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS preferred_industry VARCHAR(255) NULL"
 ];
 
 async function runMigration() {

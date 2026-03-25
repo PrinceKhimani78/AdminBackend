@@ -22,6 +22,7 @@ export interface Candidate {
   expected_salary_max?: number;
   total_experience_years?: number;
   job_category?: string;
+  preferred_industry?: string;
   current_location?: string;
   interview_availability?: string;
   availability_start?: Date | null;
@@ -67,6 +68,7 @@ export interface CreateCandidateDTO {
   expected_salary_max?: number;
   total_experience_years?: number;
   job_category?: string;
+  preferred_industry?: string;
   current_location?: string;
   interview_availability?: string;
   availability_start?: string;
@@ -109,6 +111,7 @@ export interface UpdateCandidateDTO {
   expected_salary_max?: number;
   total_experience_years?: number;
   job_category?: string;
+  preferred_industry?: string;
   current_location?: string;
   interview_availability?: string;
   availability_start?: string;

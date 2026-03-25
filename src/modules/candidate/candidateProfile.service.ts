@@ -40,7 +40,10 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
         const approvedIndustries = (recruiter as any).industries.map((ind: any) => ind.name);
         findOptions.where = {
           ...findOptions.where,
-          job_category: { [Op.in]: approvedIndustries }
+          [Op.or]: [
+            { preferred_industry: { [Op.in]: approvedIndustries } },
+            { job_category: { [Op.in]: approvedIndustries } }
+          ]
         };
       } else {
         findOptions.where = {
@@ -148,6 +151,7 @@ export const createCandidate = async (data: CreateCandidateDTO, ip_address?: str
       expected_salary_max: data.expected_salary_max,
       total_experience_years: data.total_experience_years,
       job_category: data.job_category,
+      preferred_industry: data.preferred_industry,
       current_location: data.current_location,
       interview_availability: data.interview_availability,
       availability_start: data.availability_start ? new Date(data.availability_start) : null,
@@ -244,6 +248,7 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.expected_salary_max !== undefined) updateData.expected_salary_max = data.expected_salary_max;
     if (data.total_experience_years !== undefined) updateData.total_experience_years = data.total_experience_years;
     if (data.job_category !== undefined) updateData.job_category = data.job_category;
+    if (data.preferred_industry !== undefined) updateData.preferred_industry = data.preferred_industry;
     if (data.current_location !== undefined) updateData.current_location = data.current_location;
     if (data.interview_availability !== undefined) updateData.interview_availability = data.interview_availability;
     if (data.availability_start !== undefined) updateData.availability_start = data.availability_start ? new Date(data.availability_start) : null;

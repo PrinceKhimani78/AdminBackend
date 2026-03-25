@@ -21,6 +21,7 @@ class CandidateModel extends Model<Candidate, CandidateCreationAttributes> imple
   public fresher?: boolean;
   public expected_salary?: string;
   public job_category?: string;
+  public preferred_industry?: string;
   public current_location?: string;
   public interview_availability?: string;
   public availability_start?: Date | null;
@@ -154,6 +155,10 @@ CandidateModel.init(
       allowNull: true,
     },
     job_category: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    preferred_industry: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
