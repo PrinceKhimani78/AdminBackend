@@ -23,46 +23,11 @@ export const getAllCandidates = async (page: number = 1, limit: number = 10, rec
       order: [['created_at', SORT_ORDER.DESC]],
     };
 
-    // If recruiterId is provided, join with JobApplication and Job to filter
+    /* Temporarily disabled for diagnosis
     if (recruiterId) {
-      const Recruiter = (await import('../../models/recruiter.model')).default;
-      const IndustryModel = (await import('../../models/industry.model')).default;
-
-      const recruiter = await Recruiter.findByPk(recruiterId, {
-        include: [{
-          model: IndustryModel,
-          as: 'industries',
-          attributes: ['name']
-        }]
-      });
-
-      if (recruiter) {
-        let approvedIndustries = (recruiter as any).industries ? (recruiter as any).industries.map((ind: any) => ind.name) : [];
-        
-        // Fallback to pending_industries if no approved ones yet
-        if (approvedIndustries.length === 0) {
-          let pending = (recruiter as any).pending_industries || [];
-          if (typeof pending === 'string') {
-            try { pending = JSON.parse(pending); } catch (e) { pending = []; }
-          }
-          if (Array.isArray(pending) && pending.length > 0) {
-            approvedIndustries = pending;
-          }
-        }
-
-        if (approvedIndustries.length > 0) {
-          findOptions.where = {
-            ...findOptions.where,
-            [Op.or]: [
-              { preferred_industry: { [Op.in]: approvedIndustries } },
-              { job_category: { [Op.in]: approvedIndustries } }
-            ]
-          };
-        }
-        // If still no industries at all, we don't apply any filter (show everyone) or show a notice.
-        // For now, let's not apply the impossible filter so they see something.
-      }
+      ...
     }
+    */
 
     const { count, rows } = await CandidateModel.findAndCountAll(findOptions);
 
