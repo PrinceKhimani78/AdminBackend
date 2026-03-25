@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email, password, fullName, companyName, mobileNumber } = req.body;
+        const { email, password, fullName, companyName, mobileNumber, industry } = req.body;
         const lowerEmail = email.toLowerCase();
 
         // 1. Check if recruiter already exists
@@ -19,7 +19,10 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         // 2. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 3. Create recruiter profile
+        // 3. Build pending_industries from the signup industry field
+        const pendingIndustries = industry ? [industry] : [];
+
+        // 4. Create recruiter profile
         const recruiter = await Recruiter.create({
             id: uuidv4(),
             email: lowerEmail,
@@ -28,7 +31,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             company_name: companyName,
             mobile_number: mobileNumber || null,
             status: 'PendingApproval',
-        });
+            pending_industries: pendingIndustries,
+        } as any);
 
         res.status(201).json({
             success: true,

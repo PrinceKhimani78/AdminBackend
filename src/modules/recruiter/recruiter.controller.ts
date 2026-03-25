@@ -28,20 +28,53 @@ export const getPendingRecruiters = async (req: Request, res: Response, next: Ne
 };
 
 export const approveRecruiter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const recruiter = await Recruiter.findByPk(id);
+        const recruiter = await Recruiter.findByPk(id, { transaction });
 
         if (!recruiter) {
+            await transaction.rollback();
             res.status(404).json({ success: false, message: 'Recruiter not found' });
             return;
         }
 
+        // 1. Activate the account
         recruiter.status = 'Active';
-        await recruiter.save();
 
+        // 2. Auto-approve all pending industries into the junction table
+        let pending = (recruiter as any).pending_industries || [];
+        if (typeof pending === 'string') {
+            try { pending = JSON.parse(pending); } catch (e) { pending = []; }
+        }
+        if (!Array.isArray(pending)) pending = [];
+
+        for (const industryName of pending as string[]) {
+            if (!industryName) continue;
+            // Find or create the industry
+            let industry = await IndustryModel.findOne({ where: { name: industryName }, transaction });
+            if (!industry) {
+                const slug = industryName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+                industry = await IndustryModel.create({ name: industryName, slug }, { transaction });
+            }
+            // Link recruiter ↔ industry (ignore duplicates)
+            const existing = await RecruiterIndustry.findOne({
+                where: { recruiter_id: id, industry_id: industry.id },
+                transaction
+            });
+            if (!existing) {
+                await RecruiterIndustry.create({ recruiter_id: id, industry_id: industry.id }, { transaction });
+            }
+        }
+
+        // 3. Clear pending_industries
+        (recruiter as any).pending_industries = [];
+        await recruiter.save({ transaction });
+
+        await transaction.commit();
         res.status(200).json({ success: true, message: 'Recruiter approved successfully' });
     } catch (error) {
+        await transaction.rollback();
         next(error);
     }
 };

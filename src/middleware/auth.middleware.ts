@@ -37,3 +37,11 @@ export const authorizeSuperAdmin = (req: AuthRequest, res: Response, next: NextF
         res.status(403).json({ success: false, message: 'Access denied. Superadmin only.' });
     }
 };
+
+export const authorizeAdminOrRecruiter = (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (req.user && (req.user.type === 'admin' || req.user.role === 'recruiter')) {
+        next();
+    } else {
+        res.status(403).json({ success: false, message: 'Access denied. Admin or Recruiter only.' });
+    }
+};

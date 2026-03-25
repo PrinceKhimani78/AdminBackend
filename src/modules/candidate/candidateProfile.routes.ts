@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as candidateController from './candidateProfile.controller';
 import { uploadCandidateFiles } from '../../middleware/upload.middleware';
-import { authenticate, authorizeAdmin, authorizeSuperAdmin } from '../../middleware/auth.middleware';
+import { authenticate, authorizeAdmin, authorizeSuperAdmin, authorizeAdminOrRecruiter } from '../../middleware/auth.middleware';
 import { validateUUID, checkValidation } from '../../middleware/inputValidator';
 import { validateWithJoi } from '../../middleware/joiValidator';
 import { createCandidateProfileSchema, updateCandidateProfileSchema } from './candidateProfile.validator';
@@ -11,7 +11,7 @@ import { transformFrontendFields } from '../../middleware/fieldTransformer.middl
 const router = Router();
 
 // Main CRUD operations with SQL injection protection
-router.get('/', authenticate, authorizeAdmin, candidateController.getAllProfiles);
+router.get('/', authenticate, authorizeAdminOrRecruiter, candidateController.getAllProfiles);
 router.get('/:id', validateUUID, checkValidation, authenticate, candidateController.getProfile);
 router.post('/', transformFrontendFields, validateWithJoi(createCandidateProfileSchema), candidateController.createProfile);
 router.put('/:id', validateUUID, authenticate, transformFrontendFields, validateWithJoi(updateCandidateProfileSchema), candidateController.updateProfile);

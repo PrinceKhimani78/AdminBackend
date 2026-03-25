@@ -13,12 +13,12 @@ router.post('/request-industry', authenticate, recruiterController.requestIndust
 
 // Admin Endpoints
 router.get('/pending', authenticate, authorizeAdmin, recruiterController.getPendingRecruiters);
-router.post('/approve/:id', authenticate, authorizeSuperAdmin, recruiterController.approveRecruiter);
-router.post('/reject/:id', authenticate, authorizeSuperAdmin, recruiterController.rejectRecruiter);
+router.post('/approve/:id', authenticate, authorizeAdmin, recruiterController.approveRecruiter);
+router.post('/reject/:id', authenticate, authorizeAdmin, recruiterController.rejectRecruiter);
 
 router.get('/industry-requests', authenticate, authorizeAdmin, recruiterController.getPendingIndustries);
 router.get('/industries-list', authenticate, authorizeAdmin, recruiterController.getAllRecruiterIndustries);
-router.post('/approve-industry', authenticate, authorizeSuperAdmin, recruiterController.approveIndustry);
-router.post('/reject-industry', authenticate, authorizeSuperAdmin, recruiterController.rejectIndustry);
+router.post('/approve-industry', authenticate, authorizeAdmin, recruiterController.approveIndustry);
+router.post('/reject-industry', authenticate, authorizeAdmin, recruiterController.rejectIndustry);
 
 export default router;
