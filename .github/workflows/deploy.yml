@@ -44,9 +44,10 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          export NVM_DIR=~/.nvm
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm use 20 || nvm install 20
+          # Use binary installs only, never compile from source on small VPS
+          export NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
+          nvm use 20 || (rm -rf "$NVM_DIR/versions/node/v20.20.2" && nvm install 20 --bin)
+          nvm use 20
 
           cd /home/api.rojgariindia.com/public_html
           tar -xzf release.tar.gz || true
