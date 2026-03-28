@@ -3,14 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+
+// Load environment variables immediately as a priority
+dotenv.config();
+
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import router from './routes';
 import { sequelize, testConnection } from './config/database';
-
-dotenv.config();
 
 const app: Application = express();
 // Trust Proxy is required when running behind Nginx. 
@@ -52,10 +54,18 @@ app.get('/health', (req, res) => {
 app.get('/fix-db-schema', async (req, res) => {
   try {
     const queries = [
+      // Fix for 'Incorrect string value' (Rupee symbol support)
+      "ALTER TABLE jobs CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+      "ALTER TABLE candidate_profiles CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+      "ALTER TABLE recruiters CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+      "ALTER TABLE job_applications CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+      
+      // Existing schema fixes
       "ALTER TABLE candidate_profiles ADD COLUMN summary TEXT NULL",
       "ALTER TABLE candidate_profiles ADD COLUMN additional_info TEXT NULL",
       "ALTER TABLE candidate_profiles ADD COLUMN password VARCHAR(255) NULL",
       "ALTER TABLE candidate_skills ADD COLUMN level VARCHAR(50) NULL",
+      "ALTER TABLE job_applications ADD COLUMN resume VARCHAR(255) NULL",
       "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) NOT NULL PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
     ];
 

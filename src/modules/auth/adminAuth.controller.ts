@@ -7,18 +7,22 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     try {
         const { email, password } = req.body; // email field now acts as identifier (email or username)
 
-        // 1. Find admin by email or username
+// 1. Find admin by email or username
+        const identifier = email.toLowerCase().trim();
+        const { Op } = require('sequelize');
+        
         const admin = await Admin.findOne({
             where: {
-                [require('sequelize').Op.or]: [
-                    { email: email },
-                    { username: email }
+                [Op.or]: [
+                    { email: identifier },
+                    { username: identifier }
                 ]
             }
         });
-
+        
         if (!admin) {
-            res.status(401).json({ success: false, message: 'Invalid email/username or password' });
+            console.log('DEBUG: Admin not found with identifier:', identifier);
+            res.status(401).json({ success: false, message: 'Invalid admin credentials' });
             return;
         }
 

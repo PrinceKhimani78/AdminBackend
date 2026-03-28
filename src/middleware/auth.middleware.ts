@@ -14,11 +14,23 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-        req.user = decoded;
+        const secret = process.env.JWT_SECRET || 'secret';
+        const decoded = jwt.verify(token, secret);
+        
+        // Support both old and new token payloads
+        req.user = typeof decoded === 'string' ? JSON.parse(decoded) : decoded;
         next();
-    } catch (err) {
-        return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+    } catch (err: any) {
+        console.error('DEBUG: JWT Verification failed:', {
+            error: err.message,
+            token: token.substring(0, 15) + '...'
+        });
+        
+        const message = err.name === 'TokenExpiredError' 
+            ? 'Your session has expired. Please log in again.' 
+            : 'Invalid authentication token. Please log in again.';
+            
+        return res.status(403).json({ success: false, message });
     }
 };
 
