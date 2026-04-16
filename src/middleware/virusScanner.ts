@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 import NodeClam from 'clamscan'; // Virus scanning re-enabled
 import fs from 'fs/promises';
 import path from 'path';
@@ -29,10 +30,11 @@ initScanner();
 
 // Scan uploaded file for viruses
 export const scanUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.files || !clamScanner) return next();
+  const request = req as any;
+  if (!request.files || !clamScanner) return next();
 
   try {
-    const files = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    const files = Array.isArray(request.files) ? request.files : Object.values(request.files).flat();
     
     for (const file of files) {
       const { isInfected, viruses } = await clamScanner.scanFile((file as any).path);
@@ -58,9 +60,10 @@ export const scanUploadedFile = async (req: Request, res: Response, next: NextFu
 
 // Validate file types
 export const validateFileType = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.files) return next();
+  const request = req as any;
+  if (!request.files) return next();
 
-  const files = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+  const files = Array.isArray(request.files) ? request.files : Object.values(request.files).flat();
   
   const allowedMimes = [
     'application/pdf',
@@ -88,9 +91,10 @@ export const validateFileType = (req: Request, res: Response, next: NextFunction
 // Validate file size
 export const validateFileSize = (maxSizeMB: number) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.files) return next();
+    const request = req as any;
+    if (!request.files) return next();
 
-    const files = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    const files = Array.isArray(request.files) ? request.files : Object.values(request.files).flat();
     const maxSize = maxSizeMB * 1024 * 1024; // Convert to bytes
 
     for (const file of files) {
