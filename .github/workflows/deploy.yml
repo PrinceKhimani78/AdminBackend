@@ -30,9 +30,10 @@ jobs:
     - name: Upload Release to Server
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: ${{ secrets.SERVER_IP }}
+        host: ${{ secrets.SERVER_HOST || secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
+        password: ${{ secrets.SERVER_PASSWORD }}
         source: "release.tar.gz"
         target: "/home/api.rojgariindia.com/public_html/"
         overwrite: true
@@ -40,9 +41,10 @@ jobs:
     - name: Deploy to Server
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.SERVER_IP }}
+        host: ${{ secrets.SERVER_HOST || secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
+        password: ${{ secrets.SERVER_PASSWORD }}
         script: |
           # Use binary installs only, never compile from source on small VPS
           export NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
