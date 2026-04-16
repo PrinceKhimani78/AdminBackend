@@ -102,6 +102,9 @@ export const uploadCandidateFiles = upload.fields([
   { name: 'resume', maxCount: 1 },
 ]);
 
+// Single file upload for applications
+export const uploadApplicationResume = upload.single('resume');
+
 // Delete old file helper (non-blocking)
 export const deleteOldFile = async (filePath: string): Promise<void> => {
   try {
