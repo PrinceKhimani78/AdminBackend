@@ -1,23 +1,59 @@
-import { Request, Response, NextFunction } from 'express';
-// import NodeClam from 'clamscan'; // Virus scanning disabled
+import NodeClam from 'clamscan'; // Virus scanning re-enabled
 import fs from 'fs/promises';
 import path from 'path';
 
 let clamScanner: any = null;
 
-// Initialize ClamAV scanner - DISABLED
+// Initialize ClamAV scanner
 const initScanner = async () => {
-  // Virus scanning disabled
-  return null;
+  try {
+    const clam = new NodeClam();
+    clamScanner = await clam.init({
+      clamdscan: {
+        host: '127.0.0.1',
+        port: 3310,
+        timeout: 60000,
+      },
+      preference: 'clamdscan'
+    });
+    console.log('✅ ClamAV Scanner Initialized');
+    return clamScanner;
+  } catch (error) {
+    console.error('❌ Failed to initialize ClamAV:', error);
+    return null;
+  }
 };
 
-// Scanner initialization disabled
-// initScanner();
+// Start initialization
+initScanner();
 
-// Scan uploaded file for viruses - DISABLED
+// Scan uploaded file for viruses
 export const scanUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
-  // Virus scanning disabled - skip to next middleware
-  next();
+  if (!req.files || !clamScanner) return next();
+
+  try {
+    const files = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    
+    for (const file of files) {
+      const { isInfected, viruses } = await clamScanner.scanFile((file as any).path);
+      
+      if (isInfected) {
+        // Delete infected file
+        await fs.unlink((file as any).path);
+        
+        return res.status(400).json({
+          success: false,
+          message: 'Security Alert: File is infected!',
+          viruses
+        });
+      }
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Virus scan error:', error);
+    next(); // Continue even if scanner fails, or handle as error
+  }
 };
 
 // Validate file types
