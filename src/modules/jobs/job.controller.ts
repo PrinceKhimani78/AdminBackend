@@ -98,12 +98,13 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
 // 2. Get all jobs posted by the logged-in recruiter
 export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.user || (req.user.role !== 'recruiter' && req.user.role !== 'superadmin')) {
+        const isAdmin = req.user.type === 'admin';
+        if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
         }
 
-        const whereClause = req.user.role === 'superadmin' ? {} : { recruiter_id: req.user.id };
+        const whereClause = isAdmin ? {} : { recruiter_id: req.user.id };
         const jobs = await Job.findAll({
             where: whereClause,
             order: [['created_at', 'DESC']]
@@ -121,7 +122,8 @@ export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunct
 // 3. Update job status (e.g. from Active to Expired)
 export const updateJobStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.user || (req.user.role !== 'recruiter' && req.user.role !== 'superadmin')) {
+        const isAdmin = req.user.type === 'admin';
+        if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
         }
@@ -129,7 +131,7 @@ export const updateJobStatus = async (req: AuthRequest, res: Response, next: Nex
         const { id } = req.params;
         const { status } = req.body; // should be 'Active', 'Expired', or 'Draft'
 
-        const whereClause = req.user.role === 'superadmin' ? { id } : { id, recruiter_id: req.user.id };
+        const whereClause = isAdmin ? { id } : { id, recruiter_id: req.user.id };
         const job = await Job.findOne({ where: whereClause });
 
         if (!job) {
@@ -192,13 +194,14 @@ export const getPublicJobById = async (req: Request, res: Response, next: NextFu
 // 5. Get job by ID (Recruiter only)
 export const getJobById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.user || (req.user.role !== 'recruiter' && req.user.role !== 'superadmin')) {
+        const isAdmin = req.user.type === 'admin';
+        if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
         }
 
         const { id } = req.params;
-        const whereClause = req.user.role === 'superadmin' ? { id } : { id, recruiter_id: req.user.id };
+        const whereClause = isAdmin ? { id } : { id, recruiter_id: req.user.id };
         const job = await Job.findOne({ where: whereClause });
 
         if (!job) {
@@ -218,7 +221,8 @@ export const getJobById = async (req: AuthRequest, res: Response, next: NextFunc
 // 6. Update job details (Recruiter only)
 export const updateJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.user || (req.user.role !== 'recruiter' && req.user.role !== 'superadmin')) {
+        const isAdmin = req.user.type === 'admin';
+        if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
         }
@@ -226,7 +230,7 @@ export const updateJob = async (req: AuthRequest, res: Response, next: NextFunct
         const { id } = req.params;
         const updateData = req.body;
 
-        const whereClause = req.user.role === 'superadmin' ? { id } : { id, recruiter_id: req.user.id };
+        const whereClause = isAdmin ? { id } : { id, recruiter_id: req.user.id };
         const job = await Job.findOne({ where: whereClause });
 
         if (!job) {
