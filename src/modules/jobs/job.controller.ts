@@ -98,7 +98,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
 // 2. Get all jobs posted by the logged-in recruiter
 export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user.type === 'admin';
+        const isAdmin = req.user?.type === 'admin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -122,7 +122,7 @@ export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunct
 // 3. Update job status (e.g. from Active to Expired)
 export const updateJobStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user.type === 'admin';
+        const isAdmin = req.user?.type === 'admin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -194,7 +194,7 @@ export const getPublicJobById = async (req: Request, res: Response, next: NextFu
 // 5. Get job by ID (Recruiter only)
 export const getJobById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user.type === 'admin';
+        const isAdmin = req.user?.type === 'admin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -221,7 +221,7 @@ export const getJobById = async (req: AuthRequest, res: Response, next: NextFunc
 // 6. Update job details (Recruiter only)
 export const updateJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user.type === 'admin';
+        const isAdmin = req.user?.type === 'admin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;

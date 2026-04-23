@@ -26,8 +26,8 @@ export const getAllProfiles = async (req: AuthRequest, res: Response, next: Next
 
     // Determine if we should filter by recruiter
     let recruiterId: string | undefined = undefined;
-    if (req.user.type !== 'admin') {
-      recruiterId = req.user.id;
+    if (req.user?.type !== 'admin') {
+      recruiterId = req.user?.id;
     }
 
     const result = await candidateService.getAllCandidates(page, limit, recruiterId);
