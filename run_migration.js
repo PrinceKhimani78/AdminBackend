@@ -74,7 +74,17 @@ const migrationCommands = [
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS call_time_range VARCHAR(100) NULL",
     "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS call_days VARCHAR(100) NULL",
     "CREATE TABLE IF NOT EXISTS job_applications (id CHAR(36) PRIMARY KEY, job_id CHAR(36) NOT NULL, candidate_id CHAR(36) NOT NULL, status ENUM('Applied', 'Shortlisted', 'Interviewed', 'Rejected', 'Selected') NOT NULL DEFAULT 'Applied', applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)",
-    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS preferred_industry VARCHAR(255) NULL"
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS preferred_industry VARCHAR(255) NULL",
+    // Auth columns - password login support for candidates
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS otp VARCHAR(10) NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS otp_expiry DATETIME NULL",
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS email_verified TINYINT(1) NOT NULL DEFAULT 0",
+    "ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS start_date DATE NULL",
+    // Recruiter extra columns
+    "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS otp VARCHAR(10) NULL",
+    "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS otp_expiry DATETIME NULL",
+    "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS email_verified TINYINT(1) NOT NULL DEFAULT 0"
 ];
 
 async function runMigration() {
@@ -89,10 +99,11 @@ async function runMigration() {
                 await sequelize.query(sql);
                 console.log(`✅ Success: ${sql}`);
             } catch (error) {
-                if (error.original && error.original.code === 'ER_DUP_FIELDNAME') {
-                    console.log(`⚠️  Skipped (Already exists): ${sql}`);
+                const skipCodes = ['ER_DUP_FIELDNAME', 'ER_TABLE_EXISTS_ERROR', 'ER_DUP_KEYNAME'];
+                if (error.original && skipCodes.includes(error.original.code)) {
+                    console.log(`⚠️  Skipped (Already exists): ${sql.substring(0, 60)}...`);
                 } else {
-                    console.error(`❌ Failed: ${sql}`, error.message);
+                    console.error(`❌ Failed: ${sql.substring(0, 60)}...`, error.message);
                 }
             }
         }
