@@ -84,7 +84,8 @@ const migrationCommands = [
     // Recruiter extra columns
     "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS otp VARCHAR(10) NULL",
     "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS otp_expiry DATETIME NULL",
-    "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS email_verified TINYINT(1) NOT NULL DEFAULT 0"
+    "ALTER TABLE recruiters ADD COLUMN IF NOT EXISTS email_verified TINYINT(1) NOT NULL DEFAULT 0",
+    "CREATE TABLE IF NOT EXISTS saved_jobs (id CHAR(36) PRIMARY KEY, job_id CHAR(36) NOT NULL, candidate_id CHAR(36) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY unique_saved_job (job_id, candidate_id))"
 ];
 
 async function runMigration() {

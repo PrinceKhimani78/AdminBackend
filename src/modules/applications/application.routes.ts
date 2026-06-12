@@ -11,6 +11,11 @@ router.post('/apply', uploadApplicationResume, applicationController.applyJob); 
 router.get('/my-applications', applicationController.getMyApplications); // List my applications
 router.get('/check/:jobId', applicationController.checkApplicationStatus); // Check if applied for a specific job
 
+// Saved Jobs Routes
+router.post('/saved-jobs/:jobId', applicationController.toggleSaveJob);
+router.get('/saved-jobs', applicationController.getSavedJobs);
+router.get('/saved-jobs/check/:jobId', applicationController.checkSavedStatus);
+
 // Recruiter Routes (Require recruiter authorization)
 router.get('/job/:jobId/applicants', authorizeAdminOrRecruiter, applicationController.getJobApplicants); // Get all applicants for a job
 router.patch('/:id/status', authorizeAdminOrRecruiter, applicationController.updateApplicationStatus); // Update status of an application

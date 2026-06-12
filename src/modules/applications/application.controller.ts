@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import JobApplication from '../../models/jobApplication.model';
 import Job from '../../models/job.model';
 import CandidateProfile from '../../models/candidateProfile.model';
+import SavedJob from '../../models/savedJob.model';
 import { v4 as uuidv4 } from 'uuid';
-
 /**
  * @desc    Apply for a job
  * @route   POST /api/applications/apply
@@ -185,6 +185,82 @@ export const updateApplicationStatus = async (req: Request, res: Response, next:
         await application.save();
 
         res.status(200).json({ success: true, message: 'Status updated successfully', data: application });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Toggle Save/Unsave Job
+ * @route   POST /api/applications/saved-jobs/:jobId
+ * @access  Private (Candidate)
+ */
+export const toggleSaveJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { jobId } = req.params;
+        const candidateId = (req as any).user.id;
+
+        const job = await Job.findByPk(jobId);
+        if (!job) {
+            res.status(404).json({ success: false, message: 'Job not found' });
+            return;
+        }
+
+        const existingSave = await SavedJob.findOne({
+            where: { job_id: jobId, candidate_id: candidateId }
+        });
+
+        if (existingSave) {
+            await existingSave.destroy();
+            res.status(200).json({ success: true, message: 'Job unsaved successfully', saved: false });
+        } else {
+            await SavedJob.create({
+                id: uuidv4(),
+                job_id: jobId,
+                candidate_id: candidateId,
+                created_at: new Date()
+            });
+            res.status(200).json({ success: true, message: 'Job saved successfully', saved: true });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Get my saved jobs
+ * @route   GET /api/applications/saved-jobs
+ * @access  Private (Candidate)
+ */
+export const getSavedJobs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const candidateId = (req as any).user.id;
+        const savedJobs = await SavedJob.findAll({
+            where: { candidate_id: candidateId },
+            include: [{ model: Job, as: 'job' }],
+            order: [['created_at', 'DESC']]
+        });
+        res.status(200).json({ success: true, data: savedJobs });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Check if job is saved
+ * @route   GET /api/applications/saved-jobs/check/:jobId
+ * @access  Private (Candidate)
+ */
+export const checkSavedStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { jobId } = req.params;
+        const candidateId = (req as any).user.id;
+
+        const savedJob = await SavedJob.findOne({
+            where: { job_id: jobId, candidate_id: candidateId }
+        });
+
+        res.status(200).json({ success: true, saved: !!savedJob });
     } catch (error) {
         next(error);
     }
