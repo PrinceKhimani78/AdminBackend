@@ -41,6 +41,13 @@ export const applyJob = async (req: Request, res: Response, next: NextFunction):
         }
 
         // 3. Create application
+        let resumePath: string | null = null;
+        if (req.file) {
+            // Store relative path so it can be served via /uploads static route
+            const candidateId = (req as any).user.id;
+            resumePath = `application_resume/${candidateId}/${req.file.filename}`;
+        }
+
         const application = await JobApplication.create({
             id: uuidv4(),
             job_id: jobId,
@@ -48,7 +55,7 @@ export const applyJob = async (req: Request, res: Response, next: NextFunction):
             status: 'Applied',
             applied_at: new Date(),
             screening_answers: screeningAnswers ? JSON.stringify(screeningAnswers) : null,
-            resume: req.file ? req.file.filename : null
+            resume: resumePath
         });
 
         res.status(201).json({
