@@ -66,7 +66,8 @@ app.get('/fix-db-schema', async (req, res) => {
       "ALTER TABLE candidate_profiles ADD COLUMN password VARCHAR(255) NULL",
       "ALTER TABLE candidate_skills ADD COLUMN level VARCHAR(50) NULL",
       "ALTER TABLE job_applications ADD COLUMN resume VARCHAR(255) NULL",
-      "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) NOT NULL PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
+      "CREATE TABLE IF NOT EXISTS candidate_education (id CHAR(36) NOT NULL PRIMARY KEY, candidate_id CHAR(36) NOT NULL, degree VARCHAR(255) NOT NULL, university VARCHAR(255) NOT NULL, passing_year VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)",
+      "CREATE TABLE IF NOT EXISTS saved_jobs (id CHAR(36) PRIMARY KEY, job_id CHAR(36) NOT NULL, candidate_id CHAR(36) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY unique_saved_job (job_id, candidate_id))"
     ];
 
     const results = [];
