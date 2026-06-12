@@ -8,6 +8,7 @@ import recruiterAuthRoutes from '../modules/auth/recruiterAuth.routes';
 import jobRoutes from '../modules/jobs/job.routes';
 import recruiterRoutes from '../modules/recruiter/recruiter.routes';
 import uploadPhotoRoutes from './upload.routes';
+import applicationRoutes from '../modules/applications/application.routes';
 import { handleMulterError } from '../middleware/multerError.middleware';
 
 const router = Router();
@@ -27,6 +28,9 @@ router.use('/candidate-profile', candidateProfileRoutes);
 
 // Jobs routes
 router.use('/jobs', jobRoutes);
+
+// Applications routes
+router.use('/applications', applicationRoutes);
 
 // Alias: /resume -> /candidate-profile for frontend compatibility
 router.use('/resume', candidateProfileRoutes);
