@@ -35,7 +35,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         password: ${{ secrets.SERVER_PASSWORD }}
         source: "release.tar.gz"
-        target: "/home/api.rojgariindia.com/public_html/"
+        target: "/home/${{ secrets.SERVER_USER }}/api.rojgariindia.com/"
         overwrite: true
 
     - name: Deploy to Server
@@ -46,22 +46,16 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          # Use binary installs only, never compile from source on small VPS
-          export NVM_NODEJS_ORG_MIRROR=https://nodejs.org/dist
-          nvm use 20 || (rm -rf "$NVM_DIR/versions/node/v20.20.2" && nvm install 20 --bin)
-          nvm use 20
-
-          cd /home/api.rojgariindia.com/public_html
+          cd /home/${{ secrets.SERVER_USER }}/api.rojgariindia.com/
           tar -xzf release.tar.gz || true
           rm -f release.tar.gz
 
-          npm install --omit=dev --no-audit --no-fund
-          node run_migration.js
+          # Force cPanel Passenger/LiteSpeed to restart the Node app
+          mkdir -p tmp
+          touch tmp/restart.txt
+          pkill -u ${{ secrets.SERVER_USER }} node || true
 
-          # Forced clean restart to ensure .env is picked up from PWD
-          pm2 delete rojgari-backend || true
-          pm2 start dist/server.js --name rojgari-backend --cwd /home/api.rojgariindia.com/public_html
-          pm2 save
+          echo "✅ AdminBackend Deployment complete!"
 
           echo "✅ AdminBackend Deployment complete! Status check..."
           sleep 5
