@@ -20,5 +20,6 @@ router.get('/industry-requests', authenticate, authorizeAdmin, recruiterControll
 router.get('/industries-list', authenticate, authorizeAdmin, recruiterController.getAllRecruiterIndustries);
 router.post('/approve-industry', authenticate, authorizeAdmin, recruiterController.approveIndustry);
 router.post('/reject-industry', authenticate, authorizeAdmin, recruiterController.rejectIndustry);
+router.delete('/:id', authenticate, authorizeSuperAdmin, recruiterController.deleteRecruiter);
 
 export default router;

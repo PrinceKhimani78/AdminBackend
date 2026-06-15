@@ -418,3 +418,23 @@ export const getRecentApplicants = async (req: Request, res: Response, next: Nex
         next(error);
     }
 };
+
+export const deleteRecruiter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const recruiter = await Recruiter.findByPk(id);
+        if (!recruiter) {
+            res.status(404).json({ success: false, message: 'Recruiter not found' });
+            return;
+        }
+
+        await recruiter.destroy();
+
+        res.status(200).json({
+            success: true,
+            message: 'Recruiter deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+};

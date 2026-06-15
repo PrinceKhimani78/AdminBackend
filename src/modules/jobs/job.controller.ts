@@ -15,7 +15,7 @@ interface AuthRequest extends Request {
 // 1. Create a new job listing (Recruiter or Admin)
 export const createJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user?.type === 'admin';
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
         const isRecruiter = req.user?.role === 'recruiter';
         const isSuperAdmin = req.user?.role === 'superadmin';
 
@@ -98,7 +98,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
 // 2. Get all jobs posted by the logged-in recruiter
 export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user?.type === 'admin';
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -122,7 +122,7 @@ export const getMyJobs = async (req: AuthRequest, res: Response, next: NextFunct
 // 3. Update job status (e.g. from Active to Expired)
 export const updateJobStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user?.type === 'admin';
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -194,7 +194,7 @@ export const getPublicJobById = async (req: Request, res: Response, next: NextFu
 // 5. Get job by ID (Recruiter only)
 export const getJobById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user?.type === 'admin';
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -221,7 +221,7 @@ export const getJobById = async (req: AuthRequest, res: Response, next: NextFunc
 // 6. Update job details (Recruiter only)
 export const updateJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const isAdmin = req.user?.type === 'admin';
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
         if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
             res.status(403).json({ success: false, message: 'Access denied.' });
             return;
@@ -238,6 +238,10 @@ export const updateJob = async (req: AuthRequest, res: Response, next: NextFunct
             return;
         }
 
+        // Prevent updating protected fields
+        delete updateData.id;
+        delete updateData.recruiter_id;
+
         // Update the job with the provided data
         await job.update(updateData);
 
@@ -245,6 +249,35 @@ export const updateJob = async (req: AuthRequest, res: Response, next: NextFunct
             success: true,
             message: 'Job updated successfully',
             data: job
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// 7. Delete a job (Recruiter or Admin)
+export const deleteJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const isAdmin = req.user?.type === 'admin' || req.user?.role === 'admin' || req.user?.role === 'superadmin';
+        if (!req.user || (req.user.role !== 'recruiter' && !isAdmin)) {
+            res.status(403).json({ success: false, message: 'Access denied.' });
+            return;
+        }
+
+        const { id } = req.params;
+        const whereClause = isAdmin ? { id } : { id, recruiter_id: req.user.id };
+        const job = await Job.findOne({ where: whereClause });
+
+        if (!job) {
+            res.status(404).json({ success: false, message: 'Job not found or unauthorized' });
+            return;
+        }
+
+        await job.destroy();
+
+        res.status(200).json({
+            success: true,
+            message: 'Job deleted successfully'
         });
     } catch (error) {
         next(error);

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createJob, getMyJobs, updateJobStatus, getAllActiveJobs, getJobById, updateJob, getPublicJobById } from './job.controller';
+import { createJob, getMyJobs, updateJobStatus, getAllActiveJobs, getJobById, updateJob, getPublicJobById, deleteJob } from './job.controller';
 import { authenticate } from '../../middleware/auth.middleware';
 
 const router = Router();
@@ -17,5 +17,6 @@ router.get('/recruiter', getMyJobs);
 router.get('/:id', getJobById);
 router.put('/:id', updateJob);
 router.patch('/:id/status', updateJobStatus);
+router.delete('/:id', deleteJob);
 
 export default router;
