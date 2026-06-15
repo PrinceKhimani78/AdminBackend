@@ -232,6 +232,36 @@ export const approveIndustry = async (req: Request, res: Response, next: NextFun
     }
 };
 
+export const removeApprovedIndustry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { recruiterId, industryName } = req.body;
+
+        const recruiter = await Recruiter.findByPk(recruiterId);
+        if (!recruiter) {
+            res.status(404).json({ success: false, message: 'Recruiter not found' });
+            return;
+        }
+
+        const industry = await IndustryModel.findOne({ where: { name: industryName } });
+        if (!industry) {
+            res.status(404).json({ success: false, message: 'Industry not found' });
+            return;
+        }
+
+        await RecruiterIndustry.destroy({
+            where: {
+                recruiter_id: recruiterId,
+                industry_id: industry.id
+            }
+        });
+
+        res.status(200).json({ success: true, message: 'Approved industry removed successfully' });
+    } catch (error) {
+        console.error('❌ ERROR in removeApprovedIndustry:', error);
+        next(error);
+    }
+};
+
 export const rejectIndustry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { recruiterId, industryName } = req.body;
