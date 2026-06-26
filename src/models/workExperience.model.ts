@@ -7,6 +7,7 @@ interface WorkExperienceCreationAttributes extends Optional<WorkExperience, 'id'
 class WorkExperienceModel extends Model<WorkExperience, WorkExperienceCreationAttributes> implements WorkExperience {
   public id!: string;
   public candidate_id!: string;
+  public industry!: string;
   public position!: string;
   public company!: string;
   public start_date!: Date | null;
@@ -30,6 +31,10 @@ WorkExperienceModel.init(
     candidate_id: {
       type: DataTypes.UUID,
       allowNull: false,
+    },
+    industry: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
     },
     position: {
       type: DataTypes.STRING(255),

@@ -1,6 +1,7 @@
 export interface WorkExperience {
   id: string;
   candidate_id: string;
+  industry?: string;
   position: string;
   company: string;
   start_date: Date | null;

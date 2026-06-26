@@ -348,6 +348,7 @@ export const updateCandidateProfileSchema = Joi.object({
   work_experience: Joi.array()
     .items(
       Joi.object({
+        industry: Joi.string().optional().allow('', null),
         position: Joi.string().optional(),
         company: Joi.string().optional(),
         start_date: Joi.date().optional().allow(null, ''),
