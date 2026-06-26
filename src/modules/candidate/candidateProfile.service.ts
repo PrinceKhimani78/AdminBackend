@@ -300,6 +300,32 @@ export const updateCandidate = async (id: string, data: UpdateCandidateDTO): Pro
     if (data.status !== undefined) updateData.status = data.status;
 
     await candidate.update(updateData, { transaction });
+
+    // Update related arrays
+    if (data.work_experience !== undefined) {
+      await WorkExperienceModel.destroy({ where: { candidate_id: id }, transaction });
+      if (Array.isArray(data.work_experience) && data.work_experience.length > 0) {
+        const weToCreate = data.work_experience.map((we: any) => ({ ...we, candidate_id: id }));
+        await WorkExperienceModel.bulkCreate(weToCreate, { transaction });
+      }
+    }
+
+    if (data.skills !== undefined) {
+      await CandidateSkillModel.destroy({ where: { candidate_id: id }, transaction });
+      if (Array.isArray(data.skills) && data.skills.length > 0) {
+        const skillsToCreate = data.skills.map((s: any) => ({ ...s, candidate_id: id }));
+        await CandidateSkillModel.bulkCreate(skillsToCreate, { transaction });
+      }
+    }
+
+    if (data.education !== undefined) {
+      await CandidateEducationModel.destroy({ where: { candidate_id: id }, transaction });
+      if (Array.isArray(data.education) && data.education.length > 0) {
+        const eduToCreate = data.education.map((e: any) => ({ ...e, candidate_id: id }));
+        await CandidateEducationModel.bulkCreate(eduToCreate, { transaction });
+      }
+    }
+
     await transaction.commit();
     return true;
   } catch (error) {

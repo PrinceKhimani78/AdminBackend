@@ -378,6 +378,7 @@ export const updateCandidateProfileSchema = Joi.object({
         degree: Joi.string().optional(),
         university: Joi.string().optional(),
         passing_year: Joi.string().optional(),
+        grade: Joi.string().optional().allow(''),
       })
     )
     .optional(),
