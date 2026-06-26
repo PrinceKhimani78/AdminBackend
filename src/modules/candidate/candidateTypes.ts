@@ -126,6 +126,10 @@ export interface UpdateCandidateDTO {
   pref_city?: string;
   pref_village?: string;
   status?: 'Active' | 'Inactive';
+  work_experience?: any[];
+  education?: any[];
+  skills?: any[];
+  certifications?: any[];
 }
 
 export interface CandidateWithRelations extends Candidate {
