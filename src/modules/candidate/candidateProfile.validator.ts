@@ -302,6 +302,14 @@ export const updateCandidateProfileSchema = Joi.object({
     .optional()
     .allow(''),
 
+  summary: Joi.string()
+    .optional()
+    .allow('', null),
+
+  additional_info: Joi.string()
+    .optional()
+    .allow('', null),
+
   current_location: Joi.string()
     .max(255)
     .optional()
