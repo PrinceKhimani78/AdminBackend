@@ -87,3 +87,96 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         next(error);
     }
 };
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email: rawEmail } = req.body;
+        if (!rawEmail) {
+            res.status(400).json({ success: false, message: 'Email is required' });
+            return;
+        }
+        const email = rawEmail.toLowerCase();
+        
+        const user = await CandidateModel.findOne({ where: { email } });
+        if (!user) {
+            res.status(404).json({ success: false, message: 'User not found with this email' });
+            return;
+        }
+
+        await otpService.sendOtpEmail(email);
+
+        res.status(200).json({
+            success: true,
+            message: 'OTP sent successfully to your email',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email: rawEmail, otp, newPassword } = req.body;
+        if (!rawEmail || !otp || !newPassword) {
+            res.status(400).json({ success: false, message: 'Missing required fields' });
+            return;
+        }
+        const email = rawEmail.toLowerCase();
+
+        const otpResult = otpService.verifyOtp(email, otp);
+        if (!otpResult.success) {
+            res.status(400).json({ success: false, message: otpResult.message });
+            return;
+        }
+
+        const user = await CandidateModel.findOne({ where: { email } });
+        if (!user) {
+            res.status(404).json({ success: false, message: 'User not found' });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await CandidateModel.update({ password: hashedPassword }, { where: { email } });
+
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const candidateId = (req as any).user?.id;
+
+        if (!candidateId || !oldPassword || !newPassword) {
+            res.status(400).json({ success: false, message: 'Missing required fields or unauthorized' });
+            return;
+        }
+
+        const user = await CandidateModel.findByPk(candidateId);
+        if (!user || !user.password) {
+            res.status(404).json({ success: false, message: 'User not found or password not set' });
+            return;
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            res.status(400).json({ success: false, message: 'Incorrect old password' });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await CandidateModel.update({ password: hashedPassword }, { where: { id: candidateId } });
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
