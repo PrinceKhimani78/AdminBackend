@@ -515,11 +515,10 @@ export function calculateProfileCompletion(candidate: CandidateWithRelations): n
   if (candidate.expected_salary || (candidate.expected_salary_min && candidate.expected_salary_max)) score += 5;
   if (candidate.total_experience_years !== undefined || candidate.experienced || candidate.fresher) score += 5;
 
-  // 4. Resume (15%)
-  if (candidate.resume) score += 15;
+  // 4. Resume (25%) - Increased from 15% since Photo is optional
+  if (candidate.resume) score += 25;
 
-  // 5. Profile Photo (10%)
-  if (candidate.profile_photo) score += 10;
+  // 5. Photo is optional, no longer counted towards 100%
 
   // 6. Education (10%)
   if (candidate.education && candidate.education.length > 0) score += 10;
