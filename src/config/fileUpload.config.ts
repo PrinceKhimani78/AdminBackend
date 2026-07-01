@@ -25,8 +25,12 @@ export const FILE_UPLOAD_CONFIG = {
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp'
     ],
-    ALLOWED_EXTENSIONS: ['.pdf', '.doc', '.docx'],
+    ALLOWED_EXTENSIONS: ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.webp'],
   },
 
   // General Settings

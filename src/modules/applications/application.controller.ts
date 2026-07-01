@@ -23,6 +23,24 @@ export const applyJob = async (req: Request, res: Response, next: NextFunction):
             }
         }
 
+        // 0. Check profile completion
+        const { getCandidateById } = await import('../candidate/candidateProfile.service');
+        const profile = await getCandidateById(candidateId);
+        
+        if (!profile) {
+            res.status(404).json({ success: false, message: 'Candidate profile not found' });
+            return;
+        }
+
+        const completion = profile.profile_completion_percentage || 0;
+        if (completion < 100) {
+            res.status(403).json({ 
+                success: false, 
+                message: `Your profile must be 100% complete to apply for jobs. Current completion: ${completion}%` 
+            });
+            return;
+        }
+
         // 1. Check if job exists
         const job = await Job.findByPk(jobId);
         if (!job) {

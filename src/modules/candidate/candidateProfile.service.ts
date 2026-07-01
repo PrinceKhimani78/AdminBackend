@@ -140,6 +140,8 @@ export const getCandidateById = async (id: string): Promise<CandidateWithRelatio
     candidateData.education = education.map(edu => edu.toJSON());
     candidateData.certifications = certifications.map(cert => cert.toJSON());
 
+    candidateData.profile_completion_percentage = calculateProfileCompletion(candidateData);
+
     return candidateData;
   });
 };
@@ -491,4 +493,39 @@ async function insertCertification(candidateId: string, data: CreateCertificatio
   };
 
   return await CandidateCertificationModel.create(certificationData, { transaction });
+}
+
+export function calculateProfileCompletion(candidate: CandidateWithRelations): number {
+  let score = 0;
+
+  // 1. Basic Info (25%)
+  if (candidate.full_name) score += 5;
+  if (candidate.email) score += 5;
+  if (candidate.mobile_number) score += 5;
+  if (candidate.gender) score += 5;
+  if (candidate.date_of_birth) score += 5;
+
+  // 2. Address (15%)
+  if (candidate.city) score += 5;
+  if (candidate.state) score += 5;
+  if (candidate.country) score += 5;
+
+  // 3. Professional Info (15%)
+  if (candidate.job_category) score += 5;
+  if (candidate.expected_salary || (candidate.expected_salary_min && candidate.expected_salary_max)) score += 5;
+  if (candidate.total_experience_years !== undefined || candidate.experienced || candidate.fresher) score += 5;
+
+  // 4. Resume (15%)
+  if (candidate.resume) score += 15;
+
+  // 5. Profile Photo (10%)
+  if (candidate.profile_photo) score += 10;
+
+  // 6. Education (10%)
+  if (candidate.education && candidate.education.length > 0) score += 10;
+
+  // 7. Skills (10%)
+  if (candidate.skills && candidate.skills.length > 0) score += 10;
+
+  return Math.min(100, score);
 }

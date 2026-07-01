@@ -137,4 +137,5 @@ export interface CandidateWithRelations extends Candidate {
   education?: any[];
   skills?: any[];
   certifications?: any[];
+  profile_completion_percentage?: number;
 }
