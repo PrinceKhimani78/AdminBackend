@@ -527,5 +527,8 @@ export function calculateProfileCompletion(candidate: CandidateWithRelations): n
   // 7. Skills (10%)
   if (candidate.skills && candidate.skills.length > 0) score += 10;
 
+  // 8. Work Experience (10%)
+  if (candidate.work_experience && candidate.work_experience.length > 0) score += 10;
+
   return Math.min(100, score);
 }
