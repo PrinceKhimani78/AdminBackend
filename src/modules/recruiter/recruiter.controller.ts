@@ -135,6 +135,11 @@ export const getPendingIndustries = async (req: Request, res: Response, next: Ne
                     { pending_industries: { [Op.ne]: null } }
                 ]
             },
+            include: [{
+                model: IndustryModel,
+                as: 'industries',
+                attributes: ['id', 'name']
+            }],
             attributes: ['id', 'full_name', 'company_name', 'pending_industries']
         });
         const formatted = recruiters.map((r: any) => {
@@ -144,6 +149,7 @@ export const getPendingIndustries = async (req: Request, res: Response, next: Ne
             }
             return {
                 ...r.get({ plain: true }),
+                approved_industries: r.industries || [],
                 pending_industries: Array.isArray(pending) ? pending : []
             };
         }).filter(r => r.pending_industries.length > 0);

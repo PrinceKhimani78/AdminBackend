@@ -24,7 +24,7 @@ const createTransporter = () => {
 
 async function run() {
   try {
-    const email = 'kadriareebah@gmail.com';
+    const email = 'areebahkadri.work@gmail.com';
     const tempPassword = Math.random().toString(36).slice(-8); // Generate 8-char random password
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
