@@ -4,6 +4,9 @@ import IndustryModel from '../../models/industry.model';
 import { sequelize } from '../../config/database';
 import { Op } from 'sequelize';
 import RecruiterIndustry from '../../models/recruiterIndustry.model';
+import Job from '../../models/job.model';
+import JobApplication from '../../models/jobApplication.model';
+import SavedJob from '../../models/savedJob.model';
 
 export const getPendingRecruiters = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -462,6 +465,22 @@ export const deleteRecruiter = async (req: Request, res: Response, next: NextFun
         if (!recruiter) {
             res.status(404).json({ success: false, message: 'Recruiter not found' });
             return;
+        }
+
+        // Delete recruiter industries
+        await RecruiterIndustry.destroy({ where: { recruiter_id: id } });
+
+        // Find all jobs by this recruiter
+        const jobs = await Job.findAll({ where: { recruiter_id: id } });
+        const jobIds = jobs.map((job: any) => job.id);
+
+        if (jobIds.length > 0) {
+            // Delete related job applications and saved jobs
+            await JobApplication.destroy({ where: { job_id: jobIds } });
+            await SavedJob.destroy({ where: { job_id: jobIds } });
+            
+            // Delete the jobs
+            await Job.destroy({ where: { recruiter_id: id } });
         }
 
         await recruiter.destroy();
