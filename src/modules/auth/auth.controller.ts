@@ -7,9 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email: rawEmail, password, fullName, otp } = req.body;
+        const { email: rawEmail, password, fullName, otp, mobileNumber } = req.body;
         const email = rawEmail.toLowerCase();
-        console.log('DEBUG: Register request received:', { email, fullName, otp, hasPassword: !!password });
+        console.log('DEBUG: Register request received:', { email, fullName, otp, mobileNumber, hasPassword: !!password });
 
         // 1. Verify OTP
         const otpResult = otpService.verifyOtp(email, otp);
@@ -36,7 +36,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             password: hashedPassword,
             full_name: fullName,
             status: 'Active',
-            mobile_number: '', // Placeholder, as per "not mobile number" rule
+            mobile_number: mobileNumber || '',
             gender: 'Other', // Placeholder
         });
 
